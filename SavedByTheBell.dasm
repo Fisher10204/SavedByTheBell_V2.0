@@ -91,9 +91,7 @@ Start
         lda                ##%00100000
         sta                NUSIZ1
 
-		lda					#100
-		sta					NUSIZ0
-		
+
 		lda					#200
 		sta					frames
 
@@ -113,6 +111,16 @@ MainLoop
 				inc			level1pos
 				nop
 				sta			RESM1
+				nop
+				nop
+				nop
+				nop
+				nop
+				nop
+				nop
+				nop
+				sta			RESM0
+
 .finishLoop
     lda     #43
     sta     TIM64T
@@ -125,7 +133,7 @@ MainLoop
 .waitForVBlank
         lda                INTIM
         bne                .waitForVBlank
-        sta                WSYNC
+
 
 ;------------------------------------------------
 ; Kernel
@@ -315,10 +323,14 @@ DrawScreen
         sbc                sprite0vert
         adc                #5
         bcs                                   .sprite0Enable
+		lda					#%00100010
+		sta					NUSIZ0
         lda                                   #0
 		sta									  GRP0
         jmp                                   .playfieldLoopMiddleTopEnd
 .sprite0Enable
+		lda					#%00100010
+		sta					NUSIZ0
         lda                                   #%11110000
         sta                                   GRP0
 ;do this stuff last in each loop
@@ -444,7 +456,7 @@ DrawScreen
 		sta				   WSYNC
 		sta				   WSYNC
 		sta				   WSYNC
-		sta				   WSYNC
+
 		;inx
 		;lda                .playfield1,x
 		;sta                PF1
