@@ -18,7 +18,7 @@
 ;------------------------------------------------
 BLACK = $00
 
-PF_REFLECT = %00000001
+PF_REFLECT = %00100001
 PF_BALL_SIZE4 = %00100000
 
 BUZZ = 25
@@ -51,10 +51,14 @@ lives			.byte
 frames			.byte
 
 direction		.byte
+bdirection		.byte
 
 gameState		.byte
 
 notecounter		.byte
+
+ob1vert			.byte
+ob2vert			.byte
 
 ;------------------------------------------------
 ; Start of ROM
@@ -84,6 +88,7 @@ Start
         sta                horiz
 		sta				   counter
 		sta				   direction
+		sta				   bdirection
         lda                #50
         sta                startingx
         lda                #160
@@ -99,10 +104,17 @@ Start
 		lda				   #125
 		sta				   sprite0vert
 		
+		lda				   #60
+		sta				   ob1vert
+		
 		lda				   #75
 		sta				   missile0vert
 		
-		lda				   #25
+		lda				   #100
+		sta				   ob2vert
+		
+		
+		lda				   #160
 		sta				   ballvert
                 
         lda                ##%00100000
@@ -140,6 +152,7 @@ MainLoop
 				nop
 				nop
 				sta			RESM0
+				sta			RESBL	
 				nop
 				nop
 				nop
@@ -150,8 +163,8 @@ MainLoop
 				nop
 				nop
 				nop
-				nop
-				sta			RESP1			
+				sta			RESP1	
+					
 .finishLoop
     lda     #43
     sta     TIM64T
@@ -317,9 +330,9 @@ DrawScreen
        	   	  sta                WSYNC
               sta                WSYNC
 
-       	      ldx          #0
-              ldy          #180
-              sta          WSYNC
+       	 ldx          #0
+         ldy          #180
+         sta          WSYNC
 		
 		lda                .playfield0,x
         sta                PF0
@@ -365,10 +378,21 @@ DrawScreen
         bcs                .2missileEnable1
         lda                #0
         sta                ENAM1
-        jmp                .2goal
+        jmp                .2ballLoop
 .2missileEnable1
         lda                #2
         sta                ENAM1
+.2ballLoop
+		tya
+        sbc                ballvert
+        adc                #7
+        bcs                .2ballEnable
+        lda                #0
+        sta                ENABL
+        jmp                .2goal
+.2ballEnable
+        lda                                   #2
+        sta                                   ENABL
 .2goal
 		tya
         sbc                player1vert
@@ -405,26 +429,12 @@ DrawScreen
         bcs                .2missileEnable2
         lda                #0
         sta                ENAM1
-        jmp                .2sprite0Loop
+        jmp                .2playfieldLoopMiddleTopEnd
 .2missileEnable2
         lda                #2
         sta                ENAM1		
 		
-.2sprite0Loop
-        tya
-        sbc                sprite0vert
-        adc                #5
-        bcs                                   .2sprite0Enable
-		lda					#%00100010
-		sta					NUSIZ0
-        lda                                   #0
-		sta									  GRP0
-        jmp                                   .2playfieldLoopMiddleTopEnd
-.2sprite0Enable
-		lda					#%00101110
-		sta					NUSIZ0
-        lda                                   #%11110000
-        sta                                   GRP0
+
 ;do this stuff last in each loop
 .2playfieldLoopMiddleTopEnd
 		sta				   WSYNC
@@ -450,11 +460,21 @@ DrawScreen
         bcs                .2missileEnable3
         lda                #0
         sta                ENAM1
-        jmp                .2playfieldLoopMiddleEnd
+        jmp                .2missile0Loop
 .2missileEnable3
         lda                #2
         sta                ENAM1		
-	
+.2missile0Loop
+		tya
+        sbc                ob2vert
+        adc                #7
+        bcs                .2missile0Enable
+        lda                #0
+        sta                ENAM0
+        jmp                .2playfieldLoopMiddleEnd
+.2missile0Enable
+		        lda                                   #2
+		        sta                                   ENAM0
 		;do this stuff last in each loop
 .2playfieldLoopMiddleEnd
 		sta				   WSYNC
@@ -478,23 +498,27 @@ DrawScreen
         bcs                .2missileEnable4
         lda                #0
         sta                ENAM1
-        jmp                .2missile0Loop
+        jmp                .2sprite0loop
 .2missileEnable4
         lda                #2
         sta                ENAM1		
 		;do this stuff last in each loop
 		;missile 0
-.2missile0Loop
+.2sprite0loop
         tya
-        sbc                missile0vert
-        adc                #7
-        bcs                .2missile0Enable
-        lda                #0
-        sta                ENAM0
-        jmp                .2playfieldLoopMiddleBottomEnd
-.2missile0Enable
-        lda                                   #2
-        sta                                   ENAM0
+        sbc                ob1vert
+        adc                #5
+        bcs                 .2sprite0Enable
+		lda					#%00100010
+		sta					NUSIZ0
+        lda                 #0
+		sta					GRP0
+        jmp                 .2playfieldLoopMiddleBottomEnd
+.2sprite0Enable
+		lda					#%00101110
+		sta					NUSIZ0
+        lda                 #%11110000
+        sta                 GRP0
 .2playfieldLoopMiddleBottomEnd
 		sta				   WSYNC
 		dey
@@ -548,6 +572,7 @@ DrawScreen
 		sta				   WSYNC
 		sta				   WSYNC
 		sta				   WSYNC
+		sta					WSYNC
 		jmp				   .ballLoop
 .level1
 		       lda                 #$04
@@ -1563,9 +1588,15 @@ DrawScreen
 .obstacleCollision
 		lda		CXM0FB
 		and		#%10000000
-		bne		.changeDirection
+		bne		.changeMDirection
+		
+		lda		CXBLPF
+		and		#%10000000
+		bne		.changeBallDirection
+		
+		
 		jmp		.playerCollide
-.changeDirection
+.changeMDirection
 		lda		direction
 		cmp		#1
 		bne		.missile0right
@@ -1581,6 +1612,24 @@ DrawScreen
 		sta		HMM0
 		lda		#1
 		sta		direction
+		
+.changeBallDirection
+		lda		bdirection
+		cmp		#1
+		bne		.ballRight
+		;jmp		.missile0left
+.ballLeft
+		lda		#%00010000
+		sta		HMBL	
+		lda		#0
+		sta		bdirection
+		jmp		.playerCollide
+.ballRight
+		lda		#%11110000
+		sta		HMBL
+		lda		#1
+		sta		bdirection
+		
 .playerCollide
 		lda		CXM1FB
 		and		#%10000000
