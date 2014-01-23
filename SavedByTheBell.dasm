@@ -48,6 +48,8 @@ lives			.byte
 
 frames			.byte
 
+direction		.byte
+
 ;------------------------------------------------
 ; Start of ROM
 ;------------------------------------------------
@@ -68,6 +70,7 @@ Start
         lda                #0
         sta                horiz
 		sta				   counter
+		sta				   direction
         lda                #50
         sta                startingx
         lda                #160
@@ -76,7 +79,7 @@ Start
         sta                COLUP1
 		
 		;setting player0 and missile0 color
-		lda				   #$40
+		lda				   #$80
 		sta				   COLUP0
 		
 		lda				   #125
@@ -91,7 +94,9 @@ Start
         lda                ##%00100000
         sta                NUSIZ1
 
-
+		lda		#%00010000
+		sta		HMM0
+		
 		lda					#200
 		sta					frames
 
@@ -131,6 +136,7 @@ MainLoop
         sta                                        HMOVE
                 
 .waitForVBlank
+		sta		CXCLR
         lda                INTIM
         bne                .waitForVBlank
 
@@ -140,10 +146,10 @@ MainLoop
 ;------------------------------------------------        
 DrawScreen
 
-		       lda                 #$80
+		       lda                 #$04
 		       sta                 COLUBK
 
-		       lda                 #$47
+		       lda                 #$C3
 		       sta                 COLUPF
 				
 			
@@ -531,9 +537,30 @@ DrawScreen
 
 ;check for player collision
 
-.ballMovement
+.player0movement
 		lda		#%11010000
 		sta		HMP0
+.obstacleCollision
+		lda		CXM0FB
+		and		#%10000000
+		bne		.changeDirection
+		jmp		.playerCollide
+.changeDirection
+		lda		direction
+		cmp		#1
+		bne		.missile0right
+		;jmp		.missile0left
+.missile0left
+		lda		#%00010000
+		sta		HMM0	
+		lda		#0
+		sta		direction
+		jmp		.playerCollide
+.missile0right
+		lda		#%11110000
+		sta		HMM0
+		lda		#1
+		sta		direction
 .playerCollide
 		lda		CXM1FB
 		and		#%10000000
@@ -554,7 +581,6 @@ DrawScreen
 		lda		CXM1P
 		and		#%01000000
 		bne		.endLevel
-		
 		jmp		.playerMovement
 		
 .playerDied
@@ -569,7 +595,6 @@ DrawScreen
 		dec		lives
 		cmp		#0
 		beq		.gameOver
-		sta		CXCLR
 		
 .endLevel
 		
