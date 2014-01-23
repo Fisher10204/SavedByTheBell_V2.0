@@ -267,7 +267,7 @@ DrawScreen
         lda                .playfield2,x
         sta                PF2
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-.playfieldLoopTopMaze		;18 scan lines, player, 15-32
+.playfieldLoopTopMaze		;18 scan lines, player, 15-32; vert 152-170
 .missileLoop1
                ;check missile1
         tya
@@ -296,7 +296,7 @@ DrawScreen
 		lda                .playfield2,x
 		sta                PF2
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-.playfieldLoopMiddleTop		;37 scan lines, player, 1 obs 32-68
+.playfieldLoopMiddleTop		;37 scan lines, player, 1 obs 32-68;  vert 115-152
 .missileLoop2
                ;check missile1
         tya
@@ -325,7 +325,7 @@ DrawScreen
 		lda                .playfield2,x
 		sta                PF2
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-.playfieldLoopMiddle		;38 scan Lines, player, 1 obs	68-105
+.playfieldLoopMiddle		;38 scan Lines, player, 1 obs	68-105; vert 77-115
 .missileLoop3
                ;check missile1
         tya
@@ -352,7 +352,7 @@ DrawScreen
 		lda                .playfield2,x
 		sta                PF2
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-.playfieldLoopMiddleBottom	;37 scan lines, player, one obs. 105-141
+.playfieldLoopMiddleBottom	;37 scan lines, player, one obs. 105-141; vert 40-77
 .missileLoop4
                ;check missile1
         tya
@@ -379,7 +379,7 @@ DrawScreen
 		lda                .playfield2,x
 		sta                PF2
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-.playfieldLoopBottomMaze	;14 scan lines, player	141-154
+.playfieldLoopBottomMaze	;14 scan lines, player	141-154; vert 26-40
 .missileLoop5
                ;check missile1
         tya
@@ -618,9 +618,6 @@ DrawScreen
 				dec		startingx
 				dec		startingx
 				dec		startingx
-				lda		#1
-				sta		AUDV0
-				sta		AUDF0
 				lda		#200
 				sta		frames
 
