@@ -524,22 +524,6 @@ DrawScreen
                 ;sta        CXCLR clears the collision flags
 
 ;check for player collision
-.timer
-		lda		frames
-		sbc		#1
-		sta		frames
-		cmp		#0
-		beq		.second
-		jmp     .waitForOverscan
-		
-.second
-		dec		startingx
-		dec		startingx
-		dec		startingx
-		dec		startingx
-		dec		startingx
-		lda		#200
-		sta		frames
 
 .ballMovement
 		lda		#%11010000
@@ -601,7 +585,7 @@ DrawScreen
         lda             SWCHA
         and             #%00100000
         beq             .down
-        jmp                                .waitForOverscan
+        jmp                                .timer
 .right
                 lda     #%11110000
                 sta     HMM1
@@ -611,16 +595,31 @@ DrawScreen
                 sta     HMM1
                 jmp     .moveHoriz
 .moveHoriz
-                jmp     .waitForOverscan
+                jmp     .timer
 .up
                 inc     vert
-                jmp     .waitForOverscan                        
+                jmp     .timer                        
 .down
                 dec     vert
-				jmp     .waitForOverscan 
+				jmp     .timer 
 
 
+.timer
+						lda		frames
+						sbc		#1
+						sta		frames
+						cmp		#0
+						beq		.second
+						jmp     .waitForOverscan
 
+.second
+						dec		startingx
+						dec		startingx
+						dec		startingx
+						dec		startingx
+						dec		startingx
+						lda		#200
+						sta		frames
 
                 
 .waitForOverscan
