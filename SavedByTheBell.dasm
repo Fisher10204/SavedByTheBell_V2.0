@@ -91,11 +91,11 @@ Start
         lda                ##%00100000
         sta                NUSIZ1
 
-		lda		#100
-		sta		NUSIZ0
+		lda					#100
+		sta					NUSIZ0
 		
-		lda		#200
-		sta		frames
+		lda					#200
+		sta					frames
 
 		lda				   #15
 		sta				   lives
@@ -169,8 +169,8 @@ DrawScreen
                lda                 #4
                sta                 loopscore
 .scoreloop
-               inx
-				iny
+              inx
+			  iny
               lda                 .zero_left,y
               sta                 PF1
               
@@ -228,9 +228,9 @@ DrawScreen
        	   	  sta                WSYNC
               sta                WSYNC
 
-       	      ldx                #0
-              ldy                #180
-              sta                WSYNC
+       	      ldx          #0
+              ldy          #180
+              sta          WSYNC
 		
 		lda                .playfield0,x
         sta                PF0
@@ -245,14 +245,14 @@ DrawScreen
         tya
         sbc                vert
         adc                #5
-        bcs                                   .missileEnable01
-        lda                                   #0
-        sta                                   ENAM1
-        jmp                                   .playfieldLoopTopEnd
+        bcs                .missileEnable01
+        lda                #0
+        sta                ENAM1
+        jmp                .playfieldLoopTopEnd
 .missileEnable01
-        lda                                        #2
-        sta                                        ENAM1
-.playfieldLoopTopEnd		
+        lda                #2
+        sta                ENAM1
+.playfieldLoopTopEnd
 		sta				   WSYNC		
 		dey
 		lda					counter
@@ -267,19 +267,19 @@ DrawScreen
         lda                .playfield2,x
         sta                PF2
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-.playfieldLoopTopMaze		;18 scan lines, player, 15-32   vert 152-170
+.playfieldLoopTopMaze		;18 scan lines, player, 15-32
 .missileLoop1
                ;check missile1
         tya
         sbc                vert
         adc                #5
-        bcs                                   .missileEnable1
-        lda                                   #0
-        sta                                   ENAM1
-        jmp                                   .playfieldLoopTopMazeEnd
+        bcs                .missileEnable1
+        lda                #0
+        sta                ENAM1
+        jmp                .playfieldLoopTopMazeEnd
 .missileEnable1
-        lda                                        #2
-        sta                                        ENAM1
+        lda                #2
+        sta                ENAM1
 		;do this stuff last in each loop
 .playfieldLoopTopMazeEnd
 		sta				   WSYNC		
@@ -296,19 +296,19 @@ DrawScreen
 		lda                .playfield2,x
 		sta                PF2
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-.playfieldLoopMiddleTop		;37 scan lines, player, 1 obs 32-68	 vert 115-152
+.playfieldLoopMiddleTop		;37 scan lines, player, 1 obs 32-68
 .missileLoop2
                ;check missile1
         tya
         sbc                vert
         adc                #5
-        bcs                                   .missileEnable2
-        lda                                   #0
-        sta                                   ENAM1
-        jmp                                   .playfieldLoopMiddleTopEnd
+        bcs                .missileEnable2
+        lda                #0
+        sta                ENAM1
+        jmp                 .playfieldLoopMiddleTopEnd
 .missileEnable2
-        lda                                        #2
-        sta                                        ENAM1		
+        lda                #2
+        sta                ENAM1		
 		;do this stuff last in each loop
 .playfieldLoopMiddleTopEnd
 		sta				   WSYNC
@@ -325,19 +325,19 @@ DrawScreen
 		lda                .playfield2,x
 		sta                PF2
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-.playfieldLoopMiddle		;38 scan Lines, player, 1 obs	68-105	vert 77-115
+.playfieldLoopMiddle		;38 scan Lines, player, 1 obs	68-105
 .missileLoop3
                ;check missile1
         tya
         sbc                vert
         adc                #5
-        bcs                                   .missileEnable3
-        lda                                   #0
-        sta                                   ENAM1
-        jmp                                   .playfieldLoopMiddleEnd
+        bcs                .missileEnable3
+        lda                #0
+        sta                ENAM1
+        jmp                .playfieldLoopMiddleEnd
 .missileEnable3
-        lda                                        #2
-        sta                                        ENAM1		
+        lda                #2
+        sta                ENAM1		
 		;do this stuff last in each loop
 .playfieldLoopMiddleEnd
 		sta				   WSYNC
@@ -352,19 +352,19 @@ DrawScreen
 		lda                .playfield2,x
 		sta                PF2
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-.playfieldLoopMiddleBottom	;37 scan lines, player, one obs. 105-141	vert 40-77
+.playfieldLoopMiddleBottom	;37 scan lines, player, one obs. 105-141
 .missileLoop4
                ;check missile1
         tya
         sbc                vert
         adc                #5
-        bcs                                   .missileEnable4
-        lda                                   #0
-        sta                                   ENAM1
-        jmp                                   .playfieldLoopMiddleBottomEnd
+        bcs                .missileEnable4
+        lda                #0
+        sta                ENAM1
+        jmp                .playfieldLoopMiddleBottomEnd
 .missileEnable4
-        lda                                        #2
-        sta                                        ENAM1		
+        lda                #2
+        sta                ENAM1		
 		;do this stuff last in each loop
 .playfieldLoopMiddleBottomEnd
 		sta				   WSYNC
@@ -379,19 +379,19 @@ DrawScreen
 		lda                .playfield2,x
 		sta                PF2
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-.playfieldLoopBottomMaze	;14 scan lines, player	141-154 vert 26-40
+.playfieldLoopBottomMaze	;14 scan lines, player	141-154
 .missileLoop5
                ;check missile1
         tya
         sbc                vert
         adc                #5
-        bcs                                   .missileEnable5
-        lda                                   #0
-        sta                                   ENAM1
-        jmp                                   .playfieldLoopBottomMazeEnd
+        bcs                .missileEnable5
+        lda                #0
+        sta                ENAM1
+        jmp                .playfieldLoopBottomMazeEnd
 .missileEnable5
-        lda                                        #2
-        sta                                        ENAM1		
+        lda                #2
+        sta                ENAM1		
 		;do this stuff last in each loop
 .playfieldLoopBottomMazeEnd
 		sta				   WSYNC
@@ -512,6 +512,8 @@ DrawScreen
 		sta				   PF2
 		lda					#0
 		sta					counter
+		
+		
                 ;collision detection will happen between Missile0
                 ;and other stuff, the player controls
                 ;missile0
@@ -527,7 +529,7 @@ DrawScreen
 		sbc		#1
 		sta		frames
 		cmp		#0
-		bne	.second
+		beq		.second
 		jmp     .waitForOverscan
 		
 .second
@@ -539,10 +541,9 @@ DrawScreen
 		lda		#200
 		sta		frames
 
-
 .ballMovement
-		lda	#%11010000
-		sta	HMP0
+		lda		#%11010000
+		sta		HMP0
 .playerCollide
 		lda		CXM1FB
 		and		#%10000000
@@ -586,9 +587,9 @@ DrawScreen
 		
 		
 .playerMovement
-                lda                                        #%00000000
-                sta                                        HMM1
-                lda             SWCHA
+        lda     		#%00000000
+        sta     		HMM1
+        lda     		SWCHA
         and             #%10000000
         beq             .right
         lda             SWCHA
@@ -602,21 +603,21 @@ DrawScreen
         beq             .down
         jmp                                .waitForOverscan
 .right
-                lda                                #%11110000
-                sta                                HMM1
-                jmp                                .moveHoriz
+                lda     #%11110000
+                sta     HMM1
+                jmp     .moveHoriz
 .left
-                lda                                #%00010000
-                sta                                HMM1
-                jmp                                .moveHoriz
+                lda     #%00010000
+                sta     HMM1
+                jmp     .moveHoriz
 .moveHoriz
-                jmp                                .waitForOverscan
+                jmp     .waitForOverscan
 .up
-                inc                                vert
-                jmp                                .waitForOverscan                        
+                inc     vert
+                jmp     .waitForOverscan                        
 .down
-                dec                                vert
-				jmp                                .waitForOverscan 
+                dec     vert
+				jmp     .waitForOverscan 
 
 
 
