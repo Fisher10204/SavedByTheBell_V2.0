@@ -34,7 +34,6 @@ vert        	.byte
 level1pos		.byte
 startingx   	.byte
 loopscore   	.byte
-<<<<<<< HEAD
 
 sprite0vert		.byte
 sprite0horiz	.byte
@@ -49,19 +48,6 @@ lives			.byte
 
 frames			.byte
 
-=======
-
-sprite0vert		.byte
-sprite0horiz	.byte
-
-missile0vert	.byte
-missile0horiz	.byte
-
-ballvert		.byte
-ballhoriz		.byte
-
-lives			.byte
->>>>>>> fd69dcec3b34377765af4a627b90e62a4387fd96
 ;------------------------------------------------
 ; Start of ROM
 ;------------------------------------------------
@@ -82,11 +68,7 @@ Start
         lda                #0
         sta                horiz
 		sta				   counter
-<<<<<<< HEAD
         lda                #50
-=======
-        lda                #20
->>>>>>> fd69dcec3b34377765af4a627b90e62a4387fd96
         sta                startingx
         lda                #160
         sta                vert
@@ -99,17 +81,10 @@ Start
 		
 		lda				   #125
 		sta				   sprite0vert
-<<<<<<< HEAD
 		
 		lda				   #75
 		sta				   missile0vert
 		
-=======
-		
-		lda				   #75
-		sta				   missile0vert
-		
->>>>>>> fd69dcec3b34377765af4a627b90e62a4387fd96
 		lda				   #25
 		sta				   ballvert
                 
@@ -119,15 +94,10 @@ Start
 		lda		#100
 		sta		NUSIZ0
 		
-<<<<<<< HEAD
 		lda		#100
 		sta		frames
 
 		lda				   #15
-=======
-
-		lda				   #3
->>>>>>> fd69dcec3b34377765af4a627b90e62a4387fd96
 		sta				   lives
         
 ;------------------------------------------------
@@ -169,15 +139,7 @@ DrawScreen
 		       sta                 COLUPF
 				
 			
-<<<<<<< HEAD
 			   	ldx					lives
-=======
-			   	lda					lives
-				asl
-		   		asl
-				adc					lives
-				tax
->>>>>>> fd69dcec3b34377765af4a627b90e62a4387fd96
 				ldy					startingx
                lda        		   .zero_left,y
                sta        		   WSYNC
@@ -265,28 +227,17 @@ DrawScreen
                
        	   	  sta                WSYNC
               sta                WSYNC
-<<<<<<< HEAD
 
        	      ldx                #0
               ldy                #180
               sta                WSYNC
 		
 		lda                .playfield0,x
-=======
-
-       	      ldx                #0
-              ldy                #180
-              sta                WSYNC
-
-.playfieldLoop
-        lda                .playfield0,x
->>>>>>> fd69dcec3b34377765af4a627b90e62a4387fd96
         sta                PF0
         lda                .playfield1,x
         sta                PF1
         lda                .playfield2,x
         sta                PF2
-<<<<<<< HEAD
 
 .playfieldLoopTop			;16 scan lines, no player, 0-15
 .missileLoop01
@@ -316,7 +267,7 @@ DrawScreen
         lda                .playfield2,x
         sta                PF2
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-.playfieldLoopTopMaze		;18 scan lines, player, 15-32; vert 152-170
+.playfieldLoopTopMaze		;18 scan lines, player, 15-32
 .missileLoop1
                ;check missile1
         tya
@@ -345,7 +296,7 @@ DrawScreen
 		lda                .playfield2,x
 		sta                PF2
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-.playfieldLoopMiddleTop		;37 scan lines, player, 1 obs 32-68; vert 115-152
+.playfieldLoopMiddleTop		;37 scan lines, player, 1 obs 32-68
 .missileLoop2
                ;check missile1
         tya
@@ -354,21 +305,10 @@ DrawScreen
         bcs                                   .missileEnable2
         lda                                   #0
         sta                                   ENAM1
-        jmp                                   .sprite0Loop
+        jmp                                   .playfieldLoopMiddleTopEnd
 .missileEnable2
         lda                                        #2
         sta                                        ENAM1		
-.sprite0Loop
-        tya
-        sbc                					sprite0vert
-        adc                					#5
-        bcs                                   .sprite0Enable
-        lda                                   #0
-		sta									  GRP0
-		jmp                                   .playfieldLoopMiddleTopEnd
-.sprite0Enable
-        lda                                   #%11110000
-        sta                                   GRP0		
 		;do this stuff last in each loop
 .playfieldLoopMiddleTopEnd
 		sta				   WSYNC
@@ -385,7 +325,7 @@ DrawScreen
 		lda                .playfield2,x
 		sta                PF2
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-.playfieldLoopMiddle		;38 scan Lines, player, 1 obs	68-105   vert 77-115
+.playfieldLoopMiddle		;38 scan Lines, player, 1 obs	68-105
 .missileLoop3
                ;check missile1
         tya
@@ -412,7 +352,7 @@ DrawScreen
 		lda                .playfield2,x
 		sta                PF2
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-.playfieldLoopMiddleBottom	;37 scan lines, player, one obs. 105-141; vert 40-77
+.playfieldLoopMiddleBottom	;37 scan lines, player, one obs. 105-141
 .missileLoop4
                ;check missile1
         tya
@@ -421,23 +361,10 @@ DrawScreen
         bcs                                   .missileEnable4
         lda                                   #0
         sta                                   ENAM1
-        jmp                                   .missile0Loop
+        jmp                                   .playfieldLoopMiddleBottomEnd
 .missileEnable4
         lda                                        #2
         sta                                        ENAM1		
-.missile0Loop
-               ;check missile0
-        tya
-        sbc                missile0vert
-        adc                #5
-        bcs                                   .missile0Enable
-        lda                                   #0
-        sta                                   ENAM0
-        jmp                                   .playfieldLoopMiddleBottomEnd
-.missile0Enable
-		lda                                   #2
-        sta                                   ENAM0
-		;jmp                                   .endPlayfieldLoop
 		;do this stuff last in each loop
 .playfieldLoopMiddleBottomEnd
 		sta				   WSYNC
@@ -452,7 +379,7 @@ DrawScreen
 		lda                .playfield2,x
 		sta                PF2
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-.playfieldLoopBottomMaze	;14 scan lines, player	141-154;	vert 26-40
+.playfieldLoopBottomMaze	;14 scan lines, player	141-154
 .missileLoop5
                ;check missile1
         tya
@@ -499,23 +426,6 @@ DrawScreen
 		;lda                .playfield2,x
 		;sta                PF2
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-=======
-        inx
-        ;clc
-.missileLoop
-               ;check missile1
-        tya
-        sbc                vert
-        adc                #5
-        bcs                                   .missileEnable
-        lda                                   #0
-        sta                                   ENAM1
-        jmp                                   .row1check
-.missileEnable
-        lda                                        #2
-        sta                                        ENAM1
-
->>>>>>> fd69dcec3b34377765af4a627b90e62a4387fd96
 ;.missileDisable
 ;		lda		counter
 ;		sbc		#50
@@ -529,8 +439,7 @@ DrawScreen
 		;inc			counter
 		
 ;sprite  0	
-<<<<<<< HEAD
-;.sprite0Loop
+.sprite0Loop
         ;tya
         ;sbc                sprite0vert
         ;adc                #5
@@ -539,33 +448,17 @@ DrawScreen
 		;sta									  GRP0
 		;sta								  WSYNC
         ;jmp                                   .missile0Loop
-;.sprite0Enable
+.sprite0Enable
         ;lda                                   #%11110000
         ;sta                                   GRP0
 		;jmp                                   .endPlayfieldLoop		
-=======
-.sprite0Loop
-        tya
-        sbc                sprite0vert
-       adc                #5
-        bcs                                   .sprite0Enable
-        lda                                   #0
-		sta									  GRP0
-		;sta								  WSYNC
-        jmp                                   .missile0Loop
-.sprite0Enable
-        lda                                   #%11110000
-        sta                                   GRP0
-		jmp                                   .endPlayfieldLoop		
->>>>>>> fd69dcec3b34377765af4a627b90e62a4387fd96
 		
 ;vert ~51-100
 .row2check
 ;		inc			counter
 		
 ;missile 0
-<<<<<<< HEAD
-;.missile0Loop
+.missile0Loop
                ;check missile0
        ;tya
         ;sbc                missile0vert
@@ -575,37 +468,17 @@ DrawScreen
         ;sta                                   ENAM0
 		;sta									  WSYNC
         ;jmp                                   .endPlayfieldLoop
-;.missile0Enable
+.missile0Enable
         ;lda                                   #2
       ;sta                                   ENAM0
 		;jmp                                   .endPlayfieldLoop
-=======
-.missile0Loop
-               ;check missile0
-       tya
-        sbc                missile0vert
-        adc                #5
-        bcs                                   .missile0Enable
-        lda                                   #0
-        sta                                   ENAM0
-		;sta									  WSYNC
-        jmp                                   .endPlayfieldLoop
-.missile0Enable
-        lda                                   #2
-      sta                                   ENAM0
-		jmp                                   .endPlayfieldLoop
->>>>>>> fd69dcec3b34377765af4a627b90e62a4387fd96
 
 ;vert ~1-50
 .row3check
 ;		inc			counter
 
 ;ball
-<<<<<<< HEAD
-;.ballLoop
-=======
 .ballLoop
->>>>>>> fd69dcec3b34377765af4a627b90e62a4387fd96
  ;       tya
   ;      sbc                ballvert
    ;     adc                #5
@@ -613,30 +486,17 @@ DrawScreen
      ;   lda                                   #0
       ;  sta                                   ENABL
        ; jmp                                   .endPlayfieldLoop
-<<<<<<< HEAD
-;.jmpplayfieldLoop
-		;jmp					.playfieldLoop
-;.ballEnable
-=======
 .jmpplayfieldLoop
 		;jmp					.playfieldLoop
 .ballEnable
->>>>>>> fd69dcec3b34377765af4a627b90e62a4387fd96
         ;lda                                   #2
         ;sta                                   ENABL
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 .endPlayfieldLoop
-<<<<<<< HEAD
         ;dey
         ;sta                WSYNC
         ;bne                .jmpplayfieldLoop
 		;bne					.playfieldLoop
-=======
-        dey
-        ;sta                WSYNC
-        ;bne                .jmpplayfieldLoop
-		bne					.playfieldLoop
->>>>>>> fd69dcec3b34377765af4a627b90e62a4387fd96
 ;------------------------------------------------
 ; Overscan
 ;------------------------------------------------
@@ -650,11 +510,8 @@ DrawScreen
 		sta				   PF0
 		sta				   PF1
 		sta				   PF2
-<<<<<<< HEAD
 		lda					#0
 		sta					counter
-=======
->>>>>>> fd69dcec3b34377765af4a627b90e62a4387fd96
                 ;collision detection will happen between Missile0
                 ;and other stuff, the player controls
                 ;missile0
@@ -665,7 +522,6 @@ DrawScreen
                 ;sta        CXCLR clears the collision flags
 
 ;check for player collision
-<<<<<<< HEAD
 .timer
 		;dec		frames
 		;cmp		#0
@@ -676,8 +532,6 @@ DrawScreen
 		;dec		startingx
 
 
-=======
->>>>>>> fd69dcec3b34377765af4a627b90e62a4387fd96
 .ballMovement
 		lda	#%11010000
 		sta	HMP0
@@ -710,13 +564,10 @@ DrawScreen
 		lda		#160
 		sta		vert
 		dec		lives
-<<<<<<< HEAD
 		dec		lives
 		dec		lives
 		dec		lives
 		dec		lives
-=======
->>>>>>> fd69dcec3b34377765af4a627b90e62a4387fd96
 		cmp		#0
 		beq		.gameOver
 		sta		CXCLR
@@ -757,12 +608,9 @@ DrawScreen
                 jmp                                .waitForOverscan                        
 .down
                 dec                                vert
-<<<<<<< HEAD
 				jmp                                .waitForOverscan 
 
 
-=======
->>>>>>> fd69dcec3b34377765af4a627b90e62a4387fd96
 
 
                 
@@ -781,7 +629,6 @@ DrawScreen
 		;202
         ;16
 		.byte                %11111111
-<<<<<<< HEAD
         ;.byte                %11111111
         ;.byte                %11111111
         ;.byte                %11111111
@@ -1186,576 +1033,6 @@ DrawScreen
         ;.byte                %11111111
 .playfield2                        ;180
         ;16
-=======
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-
-		;18
-        .byte                %00110000
-        .byte                %00110000
-        .byte                %00110000
-        .byte                %00110000
-        .byte                %00110000
-        .byte                %00110000
-        .byte                %00110000
-        .byte                %00110000
-        .byte                %00110000
-        .byte                %00110000
-        .byte                %00110000
-        .byte                %00110000
-        .byte                %00110000
-        .byte                %00110000
-        .byte                %00110000
-        .byte                %00110000
-        .byte                %00110000
-		.byte				 %00110000
-		;148
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-        .byte                %11111100
-		;21
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-
-.playfield1					;180
-		;16
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-		;18
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-
-		;37
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-
-		;38
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-
-		;37
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-        .byte                %00001111
-		;14
-        .byte                %00000000
-        .byte                %00000000
-        .byte                %00000000
-        .byte                %00000000
-        .byte                %00000000
-        .byte                %00000000
-        .byte                %00000000
-        .byte                %00000000
-        .byte                %00000000
-        .byte                %00000000
-        .byte                %00000000
-        .byte                %00000000
-        .byte                %00000000
-        .byte                %00000000
-		;20
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-		.byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-.playfield2                        ;180
-        ;16
-		.byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-        .byte                %11111111
-		;18
-        .byte                %00000000
-        .byte                %00000000
-        .byte                %00000000
-        .byte                %00000000
-        .byte                %00000000
-        .byte                %00000000
-        .byte                %00000000
-        .byte                %00000000
-        .byte                %00000000
-        .byte                %00000000
-        .byte                %00000000
-        .byte                %00000000
-        .byte                %00000000
-        .byte                %00000000
-        .byte                %00000000
-        .byte                %00000000
-        .byte                %00000000
-        .byte                %00000000
-		;37
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-
-		;38
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-
-		;37
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-		;14
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-        .byte                %10000000
-		;20
->>>>>>> fd69dcec3b34377765af4a627b90e62a4387fd96
 		.byte                %11111111
         ;.byte                %11111111
         ;.byte                %11111111
