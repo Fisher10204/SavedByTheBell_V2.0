@@ -585,7 +585,7 @@ DrawScreen
         lda             SWCHA
         and             #%00100000
         beq             .down
-        jmp                                .timer
+        jmp             .timer
 .right
                 lda     #%11110000
                 sta     HMM1
@@ -605,21 +605,24 @@ DrawScreen
 
 
 .timer
-						lda		frames
-						sbc		#1
-						sta		frames
-						cmp		#0
-						beq		.second
-						jmp     .waitForOverscan
+				lda		frames
+				sbc		#1
+				sta		frames
+				cmp		#0
+				beq		.second
+				jmp     .waitForOverscan
 
 .second
-						dec		startingx
-						dec		startingx
-						dec		startingx
-						dec		startingx
-						dec		startingx
-						lda		#200
-						sta		frames
+				dec		startingx
+				dec		startingx
+				dec		startingx
+				dec		startingx
+				dec		startingx
+				lda		#1
+				sta		AUDV0
+				sta		AUDF0
+				lda		#200
+				sta		frames
 
                 
 .waitForOverscan
