@@ -94,7 +94,7 @@ Start
 		lda		#100
 		sta		NUSIZ0
 		
-		lda		#100
+		lda		#200
 		sta		frames
 
 		lda				   #15
@@ -523,13 +523,17 @@ DrawScreen
 
 ;check for player collision
 .timer
-		;dec		frames
-		;cmp		#0
-		;bne	.second
-	;jmp     .waitForOverscan
+		lda		frames
+		sbc		#1
+		sta		frames
+		cmp		#0
+		bne	.second
+		jmp     .waitForOverscan
 		
 .second
-		;dec		startingx
+		dec		startingx
+		dec		startingx
+		dec		startingx
 
 
 .ballMovement
