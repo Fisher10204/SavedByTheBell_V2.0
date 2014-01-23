@@ -305,11 +305,23 @@ DrawScreen
         bcs                .missileEnable2
         lda                #0
         sta                ENAM1
-        jmp                 .playfieldLoopMiddleTopEnd
+        jmp                .sprite0Loop
 .missileEnable2
         lda                #2
         sta                ENAM1		
-		;do this stuff last in each loop
+		
+.sprite0Loop
+        tya
+        sbc                sprite0vert
+        adc                #5
+        bcs                                   .sprite0Enable
+        lda                                   #0
+		sta									  GRP0
+        jmp                                   .playfieldLoopMiddleTopEnd
+.sprite0Enable
+        lda                                   #%11110000
+        sta                                   GRP0
+;do this stuff last in each loop
 .playfieldLoopMiddleTopEnd
 		sta				   WSYNC
 		dey
@@ -338,6 +350,7 @@ DrawScreen
 .missileEnable3
         lda                #2
         sta                ENAM1		
+	
 		;do this stuff last in each loop
 .playfieldLoopMiddleEnd
 		sta				   WSYNC
@@ -361,11 +374,23 @@ DrawScreen
         bcs                .missileEnable4
         lda                #0
         sta                ENAM1
-        jmp                .playfieldLoopMiddleBottomEnd
+        jmp                .missile0Loop
 .missileEnable4
         lda                #2
         sta                ENAM1		
 		;do this stuff last in each loop
+		;missile 0
+.missile0Loop
+        tya
+        sbc                missile0vert
+        adc                #7
+        bcs                .missile0Enable
+        lda                #0
+        sta                ENAM0
+        jmp                .playfieldLoopMiddleBottomEnd
+.missile0Enable
+        lda                                   #2
+        sta                                   ENAM0
 .playfieldLoopMiddleBottomEnd
 		sta				   WSYNC
 		dey
@@ -436,42 +461,11 @@ DrawScreen
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;		
 ;vert ~101-150
 .row1check
-		;inc			counter
-		
-;sprite  0	
-.sprite0Loop
-        ;tya
-        ;sbc                sprite0vert
-        ;adc                #5
-        ;bcs                                   .sprite0Enable
-        ;lda                                   #0
-		;sta									  GRP0
-		;sta								  WSYNC
-        ;jmp                                   .missile0Loop
-.sprite0Enable
-        ;lda                                   #%11110000
-        ;sta                                   GRP0
-		;jmp                                   .endPlayfieldLoop		
+		;inc			counter		
 		
 ;vert ~51-100
 .row2check
 ;		inc			counter
-		
-;missile 0
-.missile0Loop
-               ;check missile0
-       ;tya
-        ;sbc                missile0vert
-        ;adc                #5
-        ;bcs                                   .missile0Enable
-        ;lda                                   #0
-        ;sta                                   ENAM0
-		;sta									  WSYNC
-        ;jmp                                   .endPlayfieldLoop
-.missile0Enable
-        ;lda                                   #2
-      ;sta                                   ENAM0
-		;jmp                                   .endPlayfieldLoop
 
 ;vert ~1-50
 .row3check
