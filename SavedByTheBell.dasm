@@ -1,0 +1,2094 @@
+;------------------------------------------------
+;
+; Saved By The Bell
+; Atari VCS Game 
+; Created by Brinkman, Bo Dr. on 2014-01-10.
+;
+; Copyright (c) 2014 __MyCompanyName__. All rights reserved.
+;
+; Use with joystick controllers
+;
+;------------------------------------------------
+        processor         6502
+        include         vcs.h
+        include         macro.h
+
+;------------------------------------------------
+; Constants
+;------------------------------------------------
+BLACK = $00
+
+PF_REFLECT = %00000001
+PF_BALL_SIZE4 = %00100000
+
+
+
+;------------------------------------------------
+; RAM
+;------------------------------------------------
+    SEG.U   variables
+    ORG     $80
+counter			.byte
+horiz       	.byte
+vert        	.byte
+level1pos		.byte
+startingx   	.byte
+loopscore   	.byte
+<<<<<<< HEAD
+
+sprite0vert		.byte
+sprite0horiz	.byte
+
+missile0vert	.byte
+missile0horiz	.byte
+
+ballvert		.byte
+ballhoriz		.byte
+
+lives			.byte
+
+frames			.byte
+
+=======
+
+sprite0vert		.byte
+sprite0horiz	.byte
+
+missile0vert	.byte
+missile0horiz	.byte
+
+ballvert		.byte
+ballhoriz		.byte
+
+lives			.byte
+>>>>>>> fd69dcec3b34377765af4a627b90e62a4387fd96
+;------------------------------------------------
+; Start of ROM
+;------------------------------------------------
+        SEG   Bank0
+        ORG   $F000               ; 4k ROM start point
+
+Start 
+        CLEAN_START                        ; Clear RAM and Registers
+
+        
+        lda                #PF_REFLECT; | PF_BALL_SIZE4
+        sta                CTRLPF
+        ;lda                #2
+        ;sta                ENABL
+		lda					#1
+		sta					level1pos
+        
+        lda                #0
+        sta                horiz
+		sta				   counter
+<<<<<<< HEAD
+        lda                #50
+=======
+        lda                #20
+>>>>>>> fd69dcec3b34377765af4a627b90e62a4387fd96
+        sta                startingx
+        lda                #160
+        sta                vert
+        lda                #$AD
+        sta                COLUP1
+		
+		;setting player0 and missile0 color
+		lda				   #$40
+		sta				   COLUP0
+		
+		lda				   #125
+		sta				   sprite0vert
+<<<<<<< HEAD
+		
+		lda				   #75
+		sta				   missile0vert
+		
+=======
+		
+		lda				   #75
+		sta				   missile0vert
+		
+>>>>>>> fd69dcec3b34377765af4a627b90e62a4387fd96
+		lda				   #25
+		sta				   ballvert
+                
+        lda                ##%00100000
+        sta                NUSIZ1
+
+		lda		#100
+		sta		NUSIZ0
+		
+<<<<<<< HEAD
+		lda		#100
+		sta		frames
+
+		lda				   #15
+=======
+
+		lda				   #3
+>>>>>>> fd69dcec3b34377765af4a627b90e62a4387fd96
+		sta				   lives
+        
+;------------------------------------------------
+; Vertical Blank
+;------------------------------------------------
+MainLoop
+        lda                #0
+        sta                VBLANK
+        VERTICAL_SYNC
+				lda			level1pos
+				cmp			#1
+				bne			.finishLoop
+				inc			level1pos
+				nop
+				sta			RESM1
+.finishLoop
+    lda     #43
+    sta     TIM64T
+
+        ;***** Vertical Blank code goes here
+
+        sta                                        WSYNC
+        sta                                        HMOVE
+                
+.waitForVBlank
+        lda                INTIM
+        bne                .waitForVBlank
+        sta                WSYNC
+
+;------------------------------------------------
+; Kernel
+;------------------------------------------------        
+DrawScreen
+
+		       lda                 #$80
+		       sta                 COLUBK
+
+		       lda                 #$47
+		       sta                 COLUPF
+				
+			
+<<<<<<< HEAD
+			   	ldx					lives
+=======
+			   	lda					lives
+				asl
+		   		asl
+				adc					lives
+				tax
+>>>>>>> fd69dcec3b34377765af4a627b90e62a4387fd96
+				ldy					startingx
+               lda        		   .zero_left,y
+               sta        		   WSYNC
+               sta         		   PF1
+                
+               nop
+               nop
+               nop
+               nop
+               nop
+               nop
+               nop
+               nop
+               nop
+               nop
+               nop
+               nop
+               nop
+               nop
+               nop
+
+
+               lda                 .zero_back,x
+               sta                 PF1
+               sta                 WSYNC
+               
+               lda                 #4
+               sta                 loopscore
+.scoreloop
+               inx
+				iny
+              lda                 .zero_left,y
+              sta                 PF1
+              
+              nop
+              nop
+              nop
+              nop
+              nop
+              nop
+              nop
+              nop
+              nop
+              nop
+              nop
+              nop
+              nop
+              nop
+              nop
+              nop
+
+              lda                .zero_back,x
+              sta                PF1        
+              sta                WSYNC
+              lda                .zero_left,y
+              sta                PF1
+
+              nop
+              nop
+              nop
+              nop
+              nop
+              nop
+              nop
+              nop
+              nop
+              nop
+              nop
+              nop
+              nop
+              nop
+              nop
+              nop
+              
+              lda                .zero_back,x
+              sta                PF1        
+              sta                WSYNC
+		
+
+              dec                loopscore
+              bne                .scoreloop
+
+              lda                #0
+              sta                PF1
+               
+       	   	  sta                WSYNC
+              sta                WSYNC
+<<<<<<< HEAD
+
+       	      ldx                #0
+              ldy                #180
+              sta                WSYNC
+		
+		lda                .playfield0,x
+=======
+
+       	      ldx                #0
+              ldy                #180
+              sta                WSYNC
+
+.playfieldLoop
+        lda                .playfield0,x
+>>>>>>> fd69dcec3b34377765af4a627b90e62a4387fd96
+        sta                PF0
+        lda                .playfield1,x
+        sta                PF1
+        lda                .playfield2,x
+        sta                PF2
+<<<<<<< HEAD
+
+.playfieldLoopTop			;16 scan lines, no player, 0-15
+.missileLoop01
+               ;check missile1
+        tya
+        sbc                vert
+        adc                #5
+        bcs                                   .missileEnable01
+        lda                                   #0
+        sta                                   ENAM1
+        jmp                                   .playfieldLoopTopEnd
+.missileEnable01
+        lda                                        #2
+        sta                                        ENAM1
+.playfieldLoopTopEnd		
+		sta				   WSYNC		
+		dey
+		lda					counter
+		inc					counter
+		cmp					#15
+		bne					.playfieldLoopTop
+		inx
+		lda                .playfield0,x
+        sta                PF0
+        lda                .playfield1,x
+        sta                PF1
+        lda                .playfield2,x
+        sta                PF2
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+.playfieldLoopTopMaze		;18 scan lines, player, 15-32; vert 152-170
+.missileLoop1
+               ;check missile1
+        tya
+        sbc                vert
+        adc                #5
+        bcs                                   .missileEnable1
+        lda                                   #0
+        sta                                   ENAM1
+        jmp                                   .playfieldLoopTopMazeEnd
+.missileEnable1
+        lda                                        #2
+        sta                                        ENAM1
+		;do this stuff last in each loop
+.playfieldLoopTopMazeEnd
+		sta				   WSYNC		
+		dey
+		lda					counter
+		inc					counter
+		cmp					#32
+		bne					.playfieldLoopTopMaze
+		inx
+		lda                .playfield0,x
+		sta                PF0
+		lda                .playfield1,x
+		sta                PF1
+		lda                .playfield2,x
+		sta                PF2
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+.playfieldLoopMiddleTop		;37 scan lines, player, 1 obs 32-68; vert 115-152
+.missileLoop2
+               ;check missile1
+        tya
+        sbc                vert
+        adc                #5
+        bcs                                   .missileEnable2
+        lda                                   #0
+        sta                                   ENAM1
+        jmp                                   .sprite0Loop
+.missileEnable2
+        lda                                        #2
+        sta                                        ENAM1		
+.sprite0Loop
+        tya
+        sbc                					sprite0vert
+        adc                					#5
+        bcs                                   .sprite0Enable
+        lda                                   #0
+		sta									  GRP0
+		jmp                                   .playfieldLoopMiddleTopEnd
+.sprite0Enable
+        lda                                   #%11110000
+        sta                                   GRP0		
+		;do this stuff last in each loop
+.playfieldLoopMiddleTopEnd
+		sta				   WSYNC
+		dey
+		lda					counter
+		inc					counter
+		cmp					#68
+		bne					.playfieldLoopMiddleTop
+		inx
+		lda                #%11111111
+		sta                PF0
+		lda                .playfield1,x
+		sta                PF1
+		lda                .playfield2,x
+		sta                PF2
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+.playfieldLoopMiddle		;38 scan Lines, player, 1 obs	68-105   vert 77-115
+.missileLoop3
+               ;check missile1
+        tya
+        sbc                vert
+        adc                #5
+        bcs                                   .missileEnable3
+        lda                                   #0
+        sta                                   ENAM1
+        jmp                                   .playfieldLoopMiddleEnd
+.missileEnable3
+        lda                                        #2
+        sta                                        ENAM1		
+		;do this stuff last in each loop
+.playfieldLoopMiddleEnd
+		sta				   WSYNC
+		dey
+		lda					counter
+		inc					counter
+		cmp					#105
+		bne					.playfieldLoopMiddle
+		inx
+		lda                .playfield1,x
+		sta                PF1
+		lda                .playfield2,x
+		sta                PF2
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+.playfieldLoopMiddleBottom	;37 scan lines, player, one obs. 105-141; vert 40-77
+.missileLoop4
+               ;check missile1
+        tya
+        sbc                vert
+        adc                #5
+        bcs                                   .missileEnable4
+        lda                                   #0
+        sta                                   ENAM1
+        jmp                                   .missile0Loop
+.missileEnable4
+        lda                                        #2
+        sta                                        ENAM1		
+.missile0Loop
+               ;check missile0
+        tya
+        sbc                missile0vert
+        adc                #5
+        bcs                                   .missile0Enable
+        lda                                   #0
+        sta                                   ENAM0
+        jmp                                   .playfieldLoopMiddleBottomEnd
+.missile0Enable
+		lda                                   #2
+        sta                                   ENAM0
+		;jmp                                   .endPlayfieldLoop
+		;do this stuff last in each loop
+.playfieldLoopMiddleBottomEnd
+		sta				   WSYNC
+		dey
+		lda					counter
+		inc					counter
+		cmp					#141
+		bne					.playfieldLoopMiddleBottom
+		inx
+		lda                .playfield1,x
+		sta                PF1
+		lda                .playfield2,x
+		sta                PF2
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+.playfieldLoopBottomMaze	;14 scan lines, player	141-154;	vert 26-40
+.missileLoop5
+               ;check missile1
+        tya
+        sbc                vert
+        adc                #5
+        bcs                                   .missileEnable5
+        lda                                   #0
+        sta                                   ENAM1
+        jmp                                   .playfieldLoopBottomMazeEnd
+.missileEnable5
+        lda                                        #2
+        sta                                        ENAM1		
+		;do this stuff last in each loop
+.playfieldLoopBottomMazeEnd
+		sta				   WSYNC
+		dey
+		lda					counter
+		inc					counter
+		cmp					#154
+		bne					.playfieldLoopBottomMaze
+		inx
+		lda                .playfield1,x
+		sta                PF1
+		lda                .playfield2,x
+		sta                PF2
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+.playfieldLoopBottom		;20 scan lines, no player 154-173
+		;do this stuff last in each loop
+		sta				   WSYNC
+		dey
+		lda					counter
+		inc					counter
+		cmp					#173
+		bne					.playfieldLoopBottom
+		sta				   WSYNC
+		sta				   WSYNC
+		sta				   WSYNC
+		sta				   WSYNC
+		sta				   WSYNC
+		sta				   WSYNC
+		;inx
+		;lda                .playfield1,x
+		;sta                PF1
+		;lda                .playfield2,x
+		;sta                PF2
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+=======
+        inx
+        ;clc
+.missileLoop
+               ;check missile1
+        tya
+        sbc                vert
+        adc                #5
+        bcs                                   .missileEnable
+        lda                                   #0
+        sta                                   ENAM1
+        jmp                                   .row1check
+.missileEnable
+        lda                                        #2
+        sta                                        ENAM1
+
+>>>>>>> fd69dcec3b34377765af4a627b90e62a4387fd96
+;.missileDisable
+;		lda		counter
+;		sbc		#50
+;		bne		.row1check
+;		sbc		#50
+;		bmi		.row2check
+;		jmp		.row3check
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;		
+;vert ~101-150
+.row1check
+		;inc			counter
+		
+;sprite  0	
+<<<<<<< HEAD
+;.sprite0Loop
+        ;tya
+        ;sbc                sprite0vert
+        ;adc                #5
+        ;bcs                                   .sprite0Enable
+        ;lda                                   #0
+		;sta									  GRP0
+		;sta								  WSYNC
+        ;jmp                                   .missile0Loop
+;.sprite0Enable
+        ;lda                                   #%11110000
+        ;sta                                   GRP0
+		;jmp                                   .endPlayfieldLoop		
+=======
+.sprite0Loop
+        tya
+        sbc                sprite0vert
+       adc                #5
+        bcs                                   .sprite0Enable
+        lda                                   #0
+		sta									  GRP0
+		;sta								  WSYNC
+        jmp                                   .missile0Loop
+.sprite0Enable
+        lda                                   #%11110000
+        sta                                   GRP0
+		jmp                                   .endPlayfieldLoop		
+>>>>>>> fd69dcec3b34377765af4a627b90e62a4387fd96
+		
+;vert ~51-100
+.row2check
+;		inc			counter
+		
+;missile 0
+<<<<<<< HEAD
+;.missile0Loop
+               ;check missile0
+       ;tya
+        ;sbc                missile0vert
+        ;adc                #5
+        ;bcs                                   .missile0Enable
+        ;lda                                   #0
+        ;sta                                   ENAM0
+		;sta									  WSYNC
+        ;jmp                                   .endPlayfieldLoop
+;.missile0Enable
+        ;lda                                   #2
+      ;sta                                   ENAM0
+		;jmp                                   .endPlayfieldLoop
+=======
+.missile0Loop
+               ;check missile0
+       tya
+        sbc                missile0vert
+        adc                #5
+        bcs                                   .missile0Enable
+        lda                                   #0
+        sta                                   ENAM0
+		;sta									  WSYNC
+        jmp                                   .endPlayfieldLoop
+.missile0Enable
+        lda                                   #2
+      sta                                   ENAM0
+		jmp                                   .endPlayfieldLoop
+>>>>>>> fd69dcec3b34377765af4a627b90e62a4387fd96
+
+;vert ~1-50
+.row3check
+;		inc			counter
+
+;ball
+<<<<<<< HEAD
+;.ballLoop
+=======
+.ballLoop
+>>>>>>> fd69dcec3b34377765af4a627b90e62a4387fd96
+ ;       tya
+  ;      sbc                ballvert
+   ;     adc                #5
+    ;    bcs                                   .ballEnable
+     ;   lda                                   #0
+      ;  sta                                   ENABL
+       ; jmp                                   .endPlayfieldLoop
+<<<<<<< HEAD
+;.jmpplayfieldLoop
+		;jmp					.playfieldLoop
+;.ballEnable
+=======
+.jmpplayfieldLoop
+		;jmp					.playfieldLoop
+.ballEnable
+>>>>>>> fd69dcec3b34377765af4a627b90e62a4387fd96
+        ;lda                                   #2
+        ;sta                                   ENABL
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+.endPlayfieldLoop
+<<<<<<< HEAD
+        ;dey
+        ;sta                WSYNC
+        ;bne                .jmpplayfieldLoop
+		;bne					.playfieldLoop
+=======
+        dey
+        ;sta                WSYNC
+        ;bne                .jmpplayfieldLoop
+		bne					.playfieldLoop
+>>>>>>> fd69dcec3b34377765af4a627b90e62a4387fd96
+;------------------------------------------------
+; Overscan
+;------------------------------------------------
+        lda                #%01000010
+        sta                VBLANK
+        lda                #36
+        sta                TIM64T
+
+        ;***** Overscan Code goes here
+		lda				   #%00000000
+		sta				   PF0
+		sta				   PF1
+		sta				   PF2
+<<<<<<< HEAD
+		lda					#0
+		sta					counter
+=======
+>>>>>>> fd69dcec3b34377765af4a627b90e62a4387fd96
+                ;collision detection will happen between Missile0
+                ;and other stuff, the player controls
+                ;missile0
+                ;addresses for collision:
+                ;CXM0P                ;missile collides with player0 or1
+                ;CXM0FB                ;missile collides with PlayField Or Ball
+                ;CXPPMM                ;Players collide or missiles collide
+                ;sta        CXCLR clears the collision flags
+
+;check for player collision
+<<<<<<< HEAD
+.timer
+		;dec		frames
+		;cmp		#0
+		;bne	.second
+	;jmp     .waitForOverscan
+		
+.second
+		;dec		startingx
+
+
+=======
+>>>>>>> fd69dcec3b34377765af4a627b90e62a4387fd96
+.ballMovement
+		lda	#%11010000
+		sta	HMP0
+.playerCollide
+		lda		CXM1FB
+		and		#%10000000
+		bne		.playerDied
+		
+		lda		CXM1P
+		and		#%10000000
+		bne		.playerDied
+		
+		lda		CXM1FB
+		and		#%01000000
+		bne		.playerDied
+		
+		lda		CXPPMM
+		and		#%01000000
+		bne		.playerDied
+		
+		lda		CXM1P
+		and		#%01000000
+		bne		.endLevel
+		
+		jmp		.playerMovement
+		
+.playerDied
+		lda		#1
+		sta		level1pos
+		lda		#160
+		sta		vert
+		dec		lives
+<<<<<<< HEAD
+		dec		lives
+		dec		lives
+		dec		lives
+		dec		lives
+=======
+>>>>>>> fd69dcec3b34377765af4a627b90e62a4387fd96
+		cmp		#0
+		beq		.gameOver
+		sta		CXCLR
+		
+.endLevel
+		
+.gameOver
+		
+		
+.playerMovement
+                lda                                        #%00000000
+                sta                                        HMM1
+                lda             SWCHA
+        and             #%10000000
+        beq             .right
+        lda             SWCHA
+        and             #%01000000
+        beq             .left
+        lda             SWCHA
+        and             #%00010000
+        beq             .up
+        lda             SWCHA
+        and             #%00100000
+        beq             .down
+        jmp                                .waitForOverscan
+.right
+                lda                                #%11110000
+                sta                                HMM1
+                jmp                                .moveHoriz
+.left
+                lda                                #%00010000
+                sta                                HMM1
+                jmp                                .moveHoriz
+.moveHoriz
+                jmp                                .waitForOverscan
+.up
+                inc                                vert
+                jmp                                .waitForOverscan                        
+.down
+                dec                                vert
+<<<<<<< HEAD
+				jmp                                .waitForOverscan 
+
+
+=======
+>>>>>>> fd69dcec3b34377765af4a627b90e62a4387fd96
+
+
+                
+.waitForOverscan
+        lda     INTIM
+        bne     .waitForOverscan
+
+        jmp                MainLoop
+
+;------------------------------------------------
+; ROM Tables
+;------------------------------------------------
+        ;***** ROM tables go here
+.playfield0     ;11110000        playfield 0 only reads these bits marked 1
+	;break into segments of 16 for top, 18 for top of maze,112 for middle of maze, 14 for bottom of maze, 20 for bottom
+		;202
+        ;16
+		.byte                %11111111
+<<<<<<< HEAD
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+
+		;18
+        .byte                %00110000
+        ;.byte                %00110000
+        ;.byte                %00110000
+        ;.byte                %00110000
+        ;.byte                %00110000
+        ;.byte                %00110000
+        ;.byte                %00110000
+        ;.byte                %00110000
+        ;.byte                %00110000
+        ;.byte                %00110000
+        ;.byte                %00110000
+        ;.byte                %00110000
+        ;.byte                %00110000
+        ;.byte                %00110000
+        ;.byte                %00110000
+        ;.byte                %00110000
+        ;.byte                %00110000
+		;.byte				 %00110000
+		;148
+        .byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+        ;.byte                %11111100
+		;21
+        .byte                %11111111
+		.byte                %11111111
+		.byte                %11111111
+		.byte                %11111111
+		.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+
+.playfield1					;180
+		;16
+        .byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+		;18
+        .byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+
+		;37
+        .byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+
+		;38
+        .byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+
+		;37
+        .byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+        ;.byte                %00001111
+		;14
+        .byte                %00000000
+        ;.byte                %00000000
+        ;.byte                %00000000
+        ;.byte                %00000000
+        ;.byte                %00000000
+        ;.byte                %00000000
+        ;.byte                %00000000
+        ;.byte                %00000000
+        ;.byte                %00000000
+        ;.byte                %00000000
+        ;.byte                %00000000
+        ;.byte                %00000000
+        ;.byte                %00000000
+        ;.byte                %00000000
+		;20
+        .byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+		;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+.playfield2                        ;180
+        ;16
+=======
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+
+		;18
+        .byte                %00110000
+        .byte                %00110000
+        .byte                %00110000
+        .byte                %00110000
+        .byte                %00110000
+        .byte                %00110000
+        .byte                %00110000
+        .byte                %00110000
+        .byte                %00110000
+        .byte                %00110000
+        .byte                %00110000
+        .byte                %00110000
+        .byte                %00110000
+        .byte                %00110000
+        .byte                %00110000
+        .byte                %00110000
+        .byte                %00110000
+		.byte				 %00110000
+		;148
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+        .byte                %11111100
+		;21
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+
+.playfield1					;180
+		;16
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+		;18
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+
+		;37
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+
+		;38
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+
+		;37
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+        .byte                %00001111
+		;14
+        .byte                %00000000
+        .byte                %00000000
+        .byte                %00000000
+        .byte                %00000000
+        .byte                %00000000
+        .byte                %00000000
+        .byte                %00000000
+        .byte                %00000000
+        .byte                %00000000
+        .byte                %00000000
+        .byte                %00000000
+        .byte                %00000000
+        .byte                %00000000
+        .byte                %00000000
+		;20
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+		.byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+.playfield2                        ;180
+        ;16
+		.byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+        .byte                %11111111
+		;18
+        .byte                %00000000
+        .byte                %00000000
+        .byte                %00000000
+        .byte                %00000000
+        .byte                %00000000
+        .byte                %00000000
+        .byte                %00000000
+        .byte                %00000000
+        .byte                %00000000
+        .byte                %00000000
+        .byte                %00000000
+        .byte                %00000000
+        .byte                %00000000
+        .byte                %00000000
+        .byte                %00000000
+        .byte                %00000000
+        .byte                %00000000
+        .byte                %00000000
+		;37
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+
+		;38
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+
+		;37
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+		;14
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+        .byte                %10000000
+		;20
+>>>>>>> fd69dcec3b34377765af4a627b90e62a4387fd96
+		.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+		;18
+        .byte                %00000000
+        ;.byte                %00000000
+        ;.byte                %00000000
+        ;.byte                %00000000
+        ;.byte                %00000000
+        ;.byte                %00000000
+        ;.byte                %00000000
+        ;.byte                %00000000
+        ;.byte                %00000000
+        ;.byte                %00000000
+        ;.byte                %00000000
+        ;.byte                %00000000
+        ;.byte                %00000000
+        ;.byte                %00000000
+        ;.byte                %00000000
+        ;.byte                %00000000
+        ;.byte                %00000000
+        ;.byte                %00000000
+		;37
+        .byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+
+		;38
+        .byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+
+		;37
+        .byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+		;14
+        .byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+        ;.byte                %10000000
+		;20
+		.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+		;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+        ;.byte                %11111111
+.zero_left
+       .byte        %11100000
+       .byte        %10100000
+       .byte        %10100000
+       .byte        %10100000
+       .byte        %11100000
+
+.one_left
+       .byte   %01000000
+       .byte   %11000000
+       .byte   %01000000
+       .byte   %01000000
+       .byte   %11100000
+.two_left
+       .byte   %11100000
+       .byte   %00100000
+       .byte   %11100000
+       .byte   %10000000
+       .byte   %11100000
+.three_left
+       .byte   %11100000
+       .byte   %00100000
+       .byte   %11100000
+       .byte   %00100000
+       .byte   %11100000
+.four_left
+       .byte   %10100000
+       .byte   %10100000
+       .byte   %11100000
+       .byte   %00100000
+       .byte   %00100000
+.five_left
+       .byte   %11100000
+       .byte   %10000000
+       .byte   %11100000
+       .byte   %00100000
+       .byte   %11100000
+.six_left
+       .byte   %11100000
+       .byte   %10000000
+       .byte   %11100000
+       .byte   %10100000
+       .byte   %11100000
+.seven_left
+       .byte   %11100000
+       .byte   %00100000
+       .byte   %00100000
+       .byte   %00100000
+       .byte   %00100000
+.eight_left
+       .byte   %11100000
+       .byte   %10100000
+       .byte   %11100000
+       .byte   %10100000
+       .byte   %11100000
+.nine_left
+       .byte   %11100000
+       .byte   %10100000
+       .byte   %11100000
+       .byte   %00100000
+       .byte   %00100000
+.ten_left
+       .byte   %01001110
+       .byte   %11001010
+       .byte   %01001010
+       .byte   %01001010
+       .byte   %11101110
+
+.zero_back
+       .byte   %00000111
+       .byte   %00000101
+       .byte   %00000101
+       .byte   %00000101
+       .byte   %00000111
+
+.one_back
+       .byte   %00000010
+       .byte   %00000011
+       .byte   %00000010
+       .byte   %00000010
+       .byte   %00000111
+
+.two_back
+       .byte   %00000111
+       .byte   %00000100
+       .byte   %00000111
+       .byte   %00000001
+       .byte   %00000111
+.three_back
+       .byte   %00000111
+       .byte   %00000100
+       .byte   %00000111
+       .byte   %00000100
+       .byte   %00000111
+.four_back
+       .byte   %00000101
+       .byte   %00000101
+       .byte   %00000111
+       .byte   %00000100
+       .byte   %00000100
+.five_back
+       .byte   %00000111
+       .byte   %00000001
+       .byte   %00000111
+       .byte   %00000100
+       .byte   %00000111
+.six_back
+       .byte   %00000111
+       .byte   %00000001
+       .byte   %00000111
+       .byte   %00000101
+       .byte   %00000111
+.seven_back
+       .byte   %00000111
+       .byte   %00000100
+       .byte   %00000100
+       .byte   %00000100
+       .byte   %00000100
+.eight_back
+       .byte   %00000111
+       .byte   %00000101
+       .byte   %00000111
+       .byte   %00000101
+       .byte   %00000111
+.nine_back
+       .byte   %00000111
+       .byte   %00000101
+       .byte   %00000111
+       .byte   %00000100
+       .byte   %00000100
+.ten_back
+       .byte   %01110010
+       .byte   %01010011
+       .byte   %01010010
+       .byte   %01010010
+       .byte   %01110111
+
+
+;------------------------------------------------
+; Interrupt Vectors
+;------------------------------------------------
+        echo [*-$F000]d, " ROM bytes used"
+        ORG    $FFFA
+        .word  Start         ; NMI
+        .word  Start         ; RESET
+        .word  Start         ; IRQ
+    
+        END
