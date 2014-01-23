@@ -1,0 +1,1801 @@
+------- FILE /Users/coonsa2/SavedByTheBell_V2.0/SavedByTheBell.dasm LEVEL 1 PASS 2
+      1  10000 ????						;------------------------------------------------
+      2  10000 ????						;
+      3  10000 ????						; Saved By The Bell
+      4  10000 ????						; Atari VCS Game
+      5  10000 ????						; Created by Brinkman, Bo Dr. on 2014-01-10.
+      6  10000 ????						;
+      7  10000 ????						; Copyright (c) 2014 __MyCompanyName__. All rights reserved.
+      8  10000 ????						;
+      9  10000 ????						; Use with joystick controllers
+     10  10000 ????						;
+     11  10000 ????						;------------------------------------------------
+     12  10000 ????				       processor	6502
+------- FILE vcs.h LEVEL 2 PASS 2
+      0  10000 ????				       include	vcs.h
+      1  10000 ????						; VCS.H
+      2  10000 ????						; Version 1.05, 13/November/2003
+      3  10000 ????
+      4  10000 ????		00 69	    VERSION_VCS =	105
+      5  10000 ????
+      6  10000 ????						; THIS IS A PRELIMINARY RELEASE OF *THE* "STANDARD" VCS.H
+      7  10000 ????						; THIS FILE IS EXPLICITLY SUPPORTED AS A DASM-PREFERRED COMPANION FILE
+      8  10000 ????						; PLEASE DO *NOT* REDISTRIBUTE THIS FILE!
+      9  10000 ????						;
+     10  10000 ????						; This file defines hardware registers and memory mapping for the
+     11  10000 ????						; Atari 2600. It is distributed as a companion machine-specific support package
+     12  10000 ????						; for the DASM compiler. Updates to this file, DASM, and associated tools are
+     13  10000 ????						; available at at http://www.atari2600.org/dasm
+     14  10000 ????						;
+     15  10000 ????						; Many thanks to the original author(s) of this file, and to everyone who has
+     16  10000 ????						; contributed to understanding the Atari 2600.  If you take issue with the
+     17  10000 ????						; contents, or naming of registers, please write to me (atari2600@taswegian.com)
+     18  10000 ????						; with your views.  Please contribute, if you think you can improve this
+     19  10000 ????						; file!
+     20  10000 ????						;
+     21  10000 ????						; Latest Revisions...
+     22  10000 ????						; 1.05  13/NOV/2003	  - Correction to 1.04 - now functions as requested by MR.
+     23  10000 ????						;			  - Added VERSION_VCS equate (which will reflect 100x version #)
+     24  10000 ????						;			    This will allow conditional code to verify VCS.H being
+     25  10000 ????						;			    used for code assembly.
+     26  10000 ????						; 1.04  12/NOV/2003	 Added TIA_BASE_WRITE_ADDRESS and TIA_BASE_READ_ADDRESS for
+     27  10000 ????						;			 convenient disassembly/reassembly compatibility for hardware
+     28  10000 ????						;			 mirrored reading/writing differences.	This is more a
+     29  10000 ????						;			 readability issue, and binary compatibility with disassembled
+     30  10000 ????						;			 and reassembled sources.  Per Manuel Rotschkar's suggestion.
+     31  10000 ????						; 1.03  12/MAY/2003	 Added SEG segment at end of file to fix old-code compatibility
+     32  10000 ????						;			 which was broken by the use of segments in this file, as
+     33  10000 ????						;			 reported by Manuel Polik on [stella] 11/MAY/2003
+     34  10000 ????						; 1.02  22/MAR/2003	 Added TIMINT($285)
+     35  10000 ????						; 1.01				Constant offset added to allow use for 3F-style bankswitching
+     36  10000 ????						;						 - define TIA_BASE_ADDRESS as $40 for Tigervision carts, otherwise
+     37  10000 ????						;						   it is safe to leave it undefined, and the base address will
+     38  10000 ????						;						   be set to 0.  Thanks to Eckhard Stolberg for the suggestion.
+     39  10000 ????						;			    Note, may use -DLABEL=EXPRESSION to define TIA_BASE_ADDRESS
+     40  10000 ????						;			  - register definitions are now generated through assignment
+     41  10000 ????						;			    in uninitialised segments.	This allows a changeable base
+     42  10000 ????						;			    address architecture.
+     43  10000 ????						; 1.0	22/MAR/2003		Initial release
+     44  10000 ????
+     45  10000 ????
+     46  10000 ????						;-------------------------------------------------------------------------------
+     47  10000 ????
+     48  10000 ????						; TIA_BASE_ADDRESS
+     49  10000 ????						; The TIA_BASE_ADDRESS defines the base address of access to TIA registers.
+     50  10000 ????						; Normally 0, the base address should (externally, before including this file)
+     51  10000 ????						; be set to $40 when creating 3F-bankswitched (and other?) cartridges.
+     52  10000 ????						; The reason is that this bankswitching scheme treats any access to locations
+     53  10000 ????						; < $40 as a bankswitch.
+     54  10000 ????
+     55  10000 ????			   -	       IFNCONST	TIA_BASE_ADDRESS
+     56  10000 ????			   -TIA_BASE_ADDRESS =	0
+     57  10000 ????				       ENDIF
+     58  10000 ????
+     59  10000 ????						; Note: The address may be defined on the command-line using the -D switch, eg:
+     60  10000 ????						; dasm.exe code.asm -DTIA_BASE_ADDRESS=$40 -f3 -v5 -ocode.bin
+     61  10000 ????						; *OR* by declaring the label before including this file, eg:
+     62  10000 ????						; TIA_BASE_ADDRESS = $40
+     63  10000 ????						;   include "vcs.h"
+     64  10000 ????
+     65  10000 ????						; Alternate read/write address capability - allows for some disassembly compatibility
+     66  10000 ????						; usage ; to allow reassembly to binary perfect copies).  This is essentially catering
+     67  10000 ????						; for the mirrored ROM hardware registers.
+     68  10000 ????
+     69  10000 ????						; Usage: As per above, define the TIA_BASE_READ_ADDRESS and/or TIA_BASE_WRITE_ADDRESS
+     70  10000 ????						; using the -D command-line switch, as required.  If the addresses are not defined,
+     71  10000 ????						; they defaut to the TIA_BASE_ADDRESS.
+     72  10000 ????
+     73  10000 ????			   -	       IFNCONST	TIA_BASE_READ_ADDRESS
+     74  10000 ????			   -TIA_BASE_READ_ADDRESS =	TIA_BASE_ADDRESS
+     75  10000 ????				       ENDIF
+     76  10000 ????
+     77  10000 ????			   -	       IFNCONST	TIA_BASE_WRITE_ADDRESS
+     78  10000 ????			   -TIA_BASE_WRITE_ADDRESS =	TIA_BASE_ADDRESS
+     79  10000 ????				       ENDIF
+     80  10000 ????
+     81  10000 ????						;-------------------------------------------------------------------------------
+     82  10000 ????
+     83 U002d ????				      SEG.U	TIA_REGISTERS_WRITE
+     84 U0000					      ORG	TIA_BASE_WRITE_ADDRESS
+     85 U0000
+     86 U0000							; DO NOT CHANGE THE RELATIVE ORDERING OF REGISTERS!
+     87 U0000
+     88 U0000		       00	   VSYNC      ds	1	; $00	 0000 00x0   Vertical Sync Set-Clear
+     89 U0001		       00	   VBLANK     ds	1	; $01	 xx00 00x0   Vertical Blank Set-Clear
+     90 U0002		       00	   WSYNC      ds	1	; $02	 ---- ----   Wait for Horizontal Blank
+     91 U0003		       00	   RSYNC      ds	1	; $03	 ---- ----   Reset Horizontal Sync Counter
+     92 U0004		       00	   NUSIZ0     ds	1	; $04	 00xx 0xxx   Number-Size player/missle 0
+     93 U0005		       00	   NUSIZ1     ds	1	; $05	 00xx 0xxx   Number-Size player/missle 1
+     94 U0006		       00	   COLUP0     ds	1	; $06	 xxxx xxx0   Color-Luminance Player 0
+     95 U0007		       00	   COLUP1     ds	1	; $07	 xxxx xxx0   Color-Luminance Player 1
+     96 U0008		       00	   COLUPF     ds	1	; $08	 xxxx xxx0   Color-Luminance Playfield
+     97 U0009		       00	   COLUBK     ds	1	; $09	 xxxx xxx0   Color-Luminance Background
+     98 U000a		       00	   CTRLPF     ds	1	; $0A	 00xx 0xxx   Control Playfield, Ball, Collisions
+     99 U000b		       00	   REFP0      ds	1	; $0B	 0000 x000   Reflection Player 0
+    100 U000c		       00	   REFP1      ds	1	; $0C	 0000 x000   Reflection Player 1
+    101 U000d		       00	   PF0	      ds	1	; $0D	 xxxx 0000   Playfield Register Byte 0
+    102 U000e		       00	   PF1	      ds	1	; $0E	 xxxx xxxx   Playfield Register Byte 1
+    103 U000f		       00	   PF2	      ds	1	; $0F	 xxxx xxxx   Playfield Register Byte 2
+    104 U0010		       00	   RESP0      ds	1	; $10	 ---- ----   Reset Player 0
+    105 U0011		       00	   RESP1      ds	1	; $11	 ---- ----   Reset Player 1
+    106 U0012		       00	   RESM0      ds	1	; $12	 ---- ----   Reset Missle 0
+    107 U0013		       00	   RESM1      ds	1	; $13	 ---- ----   Reset Missle 1
+    108 U0014		       00	   RESBL      ds	1	; $14	 ---- ----   Reset Ball
+    109 U0015		       00	   AUDC0      ds	1	; $15	 0000 xxxx   Audio Control 0
+    110 U0016		       00	   AUDC1      ds	1	; $16	 0000 xxxx   Audio Control 1
+    111 U0017		       00	   AUDF0      ds	1	; $17	 000x xxxx   Audio Frequency 0
+    112 U0018		       00	   AUDF1      ds	1	; $18	 000x xxxx   Audio Frequency 1
+    113 U0019		       00	   AUDV0      ds	1	; $19	 0000 xxxx   Audio Volume 0
+    114 U001a		       00	   AUDV1      ds	1	; $1A	 0000 xxxx   Audio Volume 1
+    115 U001b		       00	   GRP0       ds	1	; $1B	 xxxx xxxx   Graphics Register Player 0
+    116 U001c		       00	   GRP1       ds	1	; $1C	 xxxx xxxx   Graphics Register Player 1
+    117 U001d		       00	   ENAM0      ds	1	; $1D	 0000 00x0   Graphics Enable Missle 0
+    118 U001e		       00	   ENAM1      ds	1	; $1E	 0000 00x0   Graphics Enable Missle 1
+    119 U001f		       00	   ENABL      ds	1	; $1F	 0000 00x0   Graphics Enable Ball
+    120 U0020		       00	   HMP0       ds	1	; $20	 xxxx 0000   Horizontal Motion Player 0
+    121 U0021		       00	   HMP1       ds	1	; $21	 xxxx 0000   Horizontal Motion Player 1
+    122 U0022		       00	   HMM0       ds	1	; $22	 xxxx 0000   Horizontal Motion Missle 0
+    123 U0023		       00	   HMM1       ds	1	; $23	 xxxx 0000   Horizontal Motion Missle 1
+    124 U0024		       00	   HMBL       ds	1	; $24	 xxxx 0000   Horizontal Motion Ball
+    125 U0025		       00	   VDELP0     ds	1	; $25	 0000 000x   Vertical Delay Player 0
+    126 U0026		       00	   VDELP1     ds	1	; $26	 0000 000x   Vertical Delay Player 1
+    127 U0027		       00	   VDELBL     ds	1	; $27	 0000 000x   Vertical Delay Ball
+    128 U0028		       00	   RESMP0     ds	1	; $28	 0000 00x0   Reset Missle 0 to Player 0
+    129 U0029		       00	   RESMP1     ds	1	; $29	 0000 00x0   Reset Missle 1 to Player 1
+    130 U002a		       00	   HMOVE      ds	1	; $2A	 ---- ----   Apply Horizontal Motion
+    131 U002b		       00	   HMCLR      ds	1	; $2B	 ---- ----   Clear Horizontal Move Registers
+    132 U002c		       00	   CXCLR      ds	1	; $2C	 ---- ----   Clear Collision Latches
+    133 U002d
+    134 U002d							;-------------------------------------------------------------------------------
+    135 U002d
+    136 U000e ????				      SEG.U	TIA_REGISTERS_READ
+    137 U0000					      ORG	TIA_BASE_READ_ADDRESS
+    138 U0000
+    139 U0000							;											bit 7	 bit 6
+    140 U0000		       00	   CXM0P      ds	1	; $00	     xx00 0000	     Read Collision  M0-P1   M0-P0
+    141 U0001		       00	   CXM1P      ds	1	; $01	     xx00 0000			     M1-P0   M1-P1
+    142 U0002		       00	   CXP0FB     ds	1	; $02	     xx00 0000			     P0-PF   P0-BL
+    143 U0003		       00	   CXP1FB     ds	1	; $03	     xx00 0000			     P1-PF   P1-BL
+    144 U0004		       00	   CXM0FB     ds	1	; $04	     xx00 0000			     M0-PF   M0-BL
+    145 U0005		       00	   CXM1FB     ds	1	; $05	     xx00 0000			     M1-PF   M1-BL
+    146 U0006		       00	   CXBLPF     ds	1	; $06	     x000 0000			     BL-PF   -----
+    147 U0007		       00	   CXPPMM     ds	1	; $07	     xx00 0000			     P0-P1   M0-M1
+    148 U0008		       00	   INPT0      ds	1	; $08	     x000 0000	     Read Pot Port 0
+    149 U0009		       00	   INPT1      ds	1	; $09	     x000 0000	     Read Pot Port 1
+    150 U000a		       00	   INPT2      ds	1	; $0A	     x000 0000	     Read Pot Port 2
+    151 U000b		       00	   INPT3      ds	1	; $0B	     x000 0000	     Read Pot Port 3
+    152 U000c		       00	   INPT4      ds	1	; $0C		x000 0000	 Read Input (Trigger) 0
+    153 U000d		       00	   INPT5      ds	1	; $0D		x000 0000	 Read Input (Trigger) 1
+    154 U000e
+    155 U000e							;-------------------------------------------------------------------------------
+    156 U000e
+    157 U0298 ????				      SEG.U	RIOT
+    158 U0280					      ORG	$280
+    159 U0280
+    160 U0280							; RIOT MEMORY MAP
+    161 U0280
+    162 U0280		       00	   SWCHA      ds	1	; $280      Port A data register for joysticks:
+    163 U0281							;			Bits 4-7 for player 1.  Bits 0-3 for player 2.
+    164 U0281
+    165 U0281		       00	   SWACNT     ds	1	; $281      Port A data direction register (DDR)
+    166 U0282		       00	   SWCHB      ds	1	; $282		Port B data (console switches)
+    167 U0283		       00	   SWBCNT     ds	1	; $283      Port B DDR
+    168 U0284		       00	   INTIM      ds	1	; $284		Timer output
+    169 U0285
+    170 U0285		       00	   TIMINT     ds	1	; $285
+    171 U0286
+    172 U0286							; Unused/undefined registers ($285-$294)
+    173 U0286
+    174 U0286		       00		      ds	1	; $286
+    175 U0287		       00		      ds	1	; $287
+    176 U0288		       00		      ds	1	; $288
+    177 U0289		       00		      ds	1	; $289
+    178 U028a		       00		      ds	1	; $28A
+    179 U028b		       00		      ds	1	; $28B
+    180 U028c		       00		      ds	1	; $28C
+    181 U028d		       00		      ds	1	; $28D
+    182 U028e		       00		      ds	1	; $28E
+    183 U028f		       00		      ds	1	; $28F
+    184 U0290		       00		      ds	1	; $290
+    185 U0291		       00		      ds	1	; $291
+    186 U0292		       00		      ds	1	; $292
+    187 U0293		       00		      ds	1	; $293
+    188 U0294
+    189 U0294		       00	   TIM1T      ds	1	; $294		set 1 clock interval
+    190 U0295		       00	   TIM8T      ds	1	; $295      set 8 clock interval
+    191 U0296		       00	   TIM64T     ds	1	; $296      set 64 clock interval
+    192 U0297		       00	   T1024T     ds	1	; $297      set 1024 clock interval
+    193 U0298
+    194 U0298							;-------------------------------------------------------------------------------
+    195 U0298							; The following required for back-compatibility with code which does not use
+    196 U0298							; segments.
+    197 U0298
+    198  0000 ????				      SEG
+    199  0000 ????
+    200  0000 ????						; EOF
+------- FILE /Users/coonsa2/SavedByTheBell_V2.0/SavedByTheBell.dasm
+------- FILE macro.h LEVEL 2 PASS 2
+      0  0000 ????				      include	macro.h
+      1  0000 ????						; MACRO.H
+      2  0000 ????						; Version 1.06, 3/SEPTEMBER/2004
+      3  0000 ????
+      4  0000 ????	       00 6a	   VERSION_MACRO =	106
+      5  0000 ????
+      6  0000 ????						;
+      7  0000 ????						; THIS FILE IS EXPLICITLY SUPPORTED AS A DASM-PREFERRED COMPANION FILE
+      8  0000 ????						; PLEASE DO *NOT* REDISTRIBUTE MODIFIED VERSIONS OF THIS FILE!
+      9  0000 ????						;
+     10  0000 ????						; This file defines DASM macros useful for development for the Atari 2600.
+     11  0000 ????						; It is distributed as a companion machine-specific support package
+     12  0000 ????						; for the DASM compiler. Updates to this file, DASM, and associated tools are
+     13  0000 ????						; available at at http://www.atari2600.org/dasm
+     14  0000 ????						;
+     15  0000 ????						; Many thanks to the people who have contributed.  If you take issue with the
+     16  0000 ????						; contents, or would like to add something, please write to me
+     17  0000 ????						; (atari2600@taswegian.com) with your contribution.
+     18  0000 ????						;
+     19  0000 ????						; Latest Revisions...
+     20  0000 ????						;
+     21  0000 ????						; 1.06  03/SEP/2004	 - nice revision of VERTICAL_BLANK (Edwin Blink)
+     22  0000 ????						; 1.05  14/NOV/2003	 - Added VERSION_MACRO equate (which will reflect 100x version #)
+     23  0000 ????						;			   This will allow conditional code to verify MACRO.H being
+     24  0000 ????						;			   used for code assembly.
+     25  0000 ????						; 1.04  13/NOV/2003	 - SET_POINTER macro added (16-bit address load)
+     26  0000 ????						;
+     27  0000 ????						; 1.03  23/JUN/2003	 - CLEAN_START macro added - clears TIA, RAM, registers
+     28  0000 ????						;
+     29  0000 ????						; 1.02  14/JUN/2003	 - VERTICAL_SYNC macro added
+     30  0000 ????						;			   (standardised macro for vertical synch code)
+     31  0000 ????						; 1.01  22/MAR/2003	 - SLEEP macro added.
+     32  0000 ????						;			 - NO_ILLEGAL_OPCODES switch implemented
+     33  0000 ????						; 1.0	22/MAR/2003		Initial release
+     34  0000 ????
+     35  0000 ????						; Note: These macros use illegal opcodes.  To disable illegal opcode usage,
+     36  0000 ????						;   define the symbol NO_ILLEGAL_OPCODES (-DNO_ILLEGAL_OPCODES=1 on command-line).
+     37  0000 ????						;   If you do not allow illegal opcode usage, you must include this file
+     38  0000 ????						;   *after* including VCS.H (as the non-illegal opcodes access hardware
+     39  0000 ????						;   registers and require them to be defined first).
+     40  0000 ????
+     41  0000 ????						; Available macros...
+     42  0000 ????						;   SLEEP n		 - sleep for n cycles
+     43  0000 ????						;   VERTICAL_SYNC	 - correct 3 scanline vertical synch code
+     44  0000 ????						;   CLEAN_START	 - set machine to known state on startup
+     45  0000 ????						;   SET_POINTER	 - load a 16-bit absolute to a 16-bit variable
+     46  0000 ????
+     47  0000 ????						;-------------------------------------------------------------------------------
+     48  0000 ????						; SLEEP duration
+     49  0000 ????						; Original author: Thomas Jentzsch
+     50  0000 ????						; Inserts code which takes the specified number of cycles to execute.	This is
+     51  0000 ????						; useful for code where precise timing is required.
+     52  0000 ????						; ILLEGAL-OPCODE VERSION DOES NOT AFFECT FLAGS OR REGISTERS.
+     53  0000 ????						; LEGAL OPCODE VERSION MAY AFFECT FLAGS
+     54  0000 ????						; Uses illegal opcode (DASM 2.20.01 onwards).
+     55  0000 ????
+     56  0000 ????				      MAC	sleep
+     57  0000 ????			   .CYCLES    SET	{1}
+     58  0000 ????
+     59  0000 ????				      IF	.CYCLES < 2
+     60  0000 ????				      ECHO	"MACRO ERROR: 'SLEEP': Duration must be > 1"
+     61  0000 ????				      ERR
+     62  0000 ????				      ENDIF
+     63  0000 ????
+     64  0000 ????				      IF	.CYCLES & 1
+     65  0000 ????				      IFNCONST	NO_ILLEGAL_OPCODES
+     66  0000 ????				      nop	0
+     67  0000 ????				      ELSE
+     68  0000 ????				      bit	VSYNC
+     69  0000 ????				      ENDIF
+     70  0000 ????			   .CYCLES    SET	.CYCLES - 3
+     71  0000 ????				      ENDIF
+     72  0000 ????
+     73  0000 ????				      REPEAT	.CYCLES / 2
+     74  0000 ????				      nop
+     75  0000 ????				      REPEND
+     76  0000 ????				      ENDM		;usage: SLEEP n (n>1)
+     77  0000 ????
+     78  0000 ????						;-------------------------------------------------------------------------------
+     79  0000 ????						; VERTICAL_SYNC
+     80  0000 ????						; revised version by Edwin Blink -- saves bytes!
+     81  0000 ????						; Inserts the code required for a proper 3 scanline vertical sync sequence
+     82  0000 ????						; Note: Alters the accumulator
+     83  0000 ????
+     84  0000 ????						; OUT: A = 0
+     85  0000 ????
+     86  0000 ????				      MAC	vertical_sync
+     87  0000 ????				      lda	#%1110	; each '1' bits generate a VSYNC ON line (bits 1..3)
+     88  0000 ????			   .VSLP1     sta	WSYNC	; 1st '0' bit resets Vsync, 2nd '0' bit exit loop
+     89  0000 ????				      sta	VSYNC
+     90  0000 ????				      lsr
+     91  0000 ????				      bne	.VSLP1	; branch until VYSNC has been reset
+     92  0000 ????				      ENDM
+     93  0000 ????
+     94  0000 ????						;-------------------------------------------------------------------------------
+     95  0000 ????						; DRAW_BLANK_SCREEN
+     96  0000 ????						; by Ian Bogost
+     97  0000 ????
+     98  0000 ????						; OUT: A = 0
+     99  0000 ????
+    100  0000 ????				      MAC	draw_blank_screen
+    101  0000 ????				      lda	#0
+    102  0000 ????				      sta	VBLANK
+    103  0000 ????				      ldx	#228
+    104  0000 ????			   .draw
+    105  0000 ????				      sta	WSYNC
+    106  0000 ????				      dex
+    107  0000 ????				      bne	.draw
+    108  0000 ????
+    109  0000 ????				      lda	#%01000010
+    110  0000 ????				      sta	VBLANK
+    111  0000 ????				      ENDM
+    112  0000 ????
+    113  0000 ????						;-------------------------------------------------------------------------------
+    114  0000 ????						; CLEAN_START
+    115  0000 ????						; Original author: Andrew Davie
+    116  0000 ????						; Standardised start-up code, clears stack, all TIA registers and RAM to 0
+    117  0000 ????						; Sets stack pointer to $FF, and all registers to 0
+    118  0000 ????						; Sets decimal mode off, sets interrupt flag (kind of un-necessary)
+    119  0000 ????						; Use as very first section of code on boot (ie: at reset)
+    120  0000 ????						; Code written to minimise total ROM usage - uses weird 6502 knowledge :)
+    121  0000 ????
+    122  0000 ????				      MAC	clean_start
+    123  0000 ????				      sei
+    124  0000 ????				      cld
+    125  0000 ????
+    126  0000 ????				      ldx	#0
+    127  0000 ????				      txa
+    128  0000 ????				      tay
+    129  0000 ????			   .CLEAR_STACK dex
+    130  0000 ????				      txs
+    131  0000 ????				      pha
+    132  0000 ????				      bne	.CLEAR_STACK	; SP=$FF, X = A = Y = 0
+    133  0000 ????
+    134  0000 ????				      ENDM
+    135  0000 ????
+    136  0000 ????						;-------------------------------------------------------
+    137  0000 ????						; SET_POINTER
+    138  0000 ????						; Original author: Manuel Rotschkar
+    139  0000 ????						;
+    140  0000 ????						; Sets a 2 byte RAM pointer to an absolute address.
+    141  0000 ????						;
+    142  0000 ????						; Usage: SET_POINTER pointer, address
+    143  0000 ????						; Example: SET_POINTER SpritePTR, SpriteData
+    144  0000 ????						;
+    145  0000 ????						; Note: Alters the accumulator, NZ flags
+    146  0000 ????						; IN 1: 2 byte RAM location reserved for pointer
+    147  0000 ????						; IN 2: absolute address
+    148  0000 ????
+    149  0000 ????				      MAC	set_pointer
+    150  0000 ????			   .POINTER   SET	{1}
+    151  0000 ????			   .ADDRESS   SET	{2}
+    152  0000 ????
+    153  0000 ????				      LDA	#<.ADDRESS	; Get Lowbyte of Address
+    154  0000 ????				      STA	.POINTER	; Store in pointer
+    155  0000 ????				      LDA	#>.ADDRESS	; Get Hibyte of Address
+    156  0000 ????				      STA	.POINTER+1	; Store in pointer+1
+    157  0000 ????
+    158  0000 ????				      ENDM
+    159  0000 ????
+    160  0000 ????						;-------------------------------------------------------
+    161  0000 ????						; BOUNDARY byte#
+    162  0000 ????						; Original author: Denis Debro (borrowed from Bob Smith / Thomas)
+    163  0000 ????						;
+    164  0000 ????						; Push data to a certain position inside a page and keep count of how
+    165  0000 ????						; many free bytes the programmer will have.
+    166  0000 ????						;
+    167  0000 ????						; eg: BOUNDARY 5    ; position at byte #5 in page
+    168  0000 ????
+    169  0000 ????			   __DASM__TOTAL_FREE_MEMORY SET	0
+    170  0000 ????			   .FREE_BYTES SET	0
+    171  0000 ????				      MAC	boundary
+    172  0000 ????				      REPEAT	256
+    173  0000 ????				      IF	<. % {1} = 0
+    174  0000 ????				      MEXIT
+    175  0000 ????				      ELSE
+    176  0000 ????			   .FREE_BYTES SET	.FREE_BYTES + 1
+    177  0000 ????				      .byte	$00
+    178  0000 ????				      ENDIF
+    179  0000 ????				      REPEND
+    180  0000 ????			   __DASM__TOTAL_FREE_MEMORY SET	__DASM__TOTAL_FREE_MEMORY + .FREE_BYTES
+    181  0000 ????				      ENDM
+    182  0000 ????
+    183  0000 ????
+    184  0000 ????						; EOF
+------- FILE /Users/coonsa2/SavedByTheBell_V2.0/SavedByTheBell.dasm
+     15  0000 ????
+     16  0000 ????						;------------------------------------------------
+     17  0000 ????						; Constants
+     18  0000 ????						;------------------------------------------------
+     19  0000 ????	       00 00	   BLACK      =	$00
+     20  0000 ????
+     21  0000 ????	       00 01	   PF_REFLECT =	%00000001
+     22  0000 ????	       00 20	   PF_BALL_SIZE4 =	%00100000
+     23  0000 ????
+     24  0000 ????
+     25  0000 ????
+     26  0000 ????						;------------------------------------------------
+     27  0000 ????						; RAM
+     28  0000 ????						;------------------------------------------------
+     29 U0090 ????				      SEG.U	variables
+     30 U0080					      ORG	$80
+     31 U0080		       00	   counter    .byte.b
+     32 U0081		       00	   horiz      .byte.b
+     33 U0082		       00	   vert       .byte.b
+     34 U0083		       00	   level1pos  .byte.b
+     35 U0084		       00	   startingx  .byte.b
+     36 U0085		       00	   loopscore  .byte.b
+     37 U0086
+     38 U0086		       00	   sprite0vert .byte.b
+     39 U0087		       00	   sprite0horiz .byte.b
+     40 U0088
+     41 U0088		       00	   missile0vert .byte.b
+     42 U0089		       00	   missile0horiz .byte.b
+     43 U008a
+     44 U008a		       00	   ballvert   .byte.b
+     45 U008b		       00	   ballhoriz  .byte.b
+     46 U008c
+     47 U008c		       00	   lives      .byte.b
+     48 U008d
+     49 U008d		       00	   frames     .byte.b
+     50 U008e
+     51 U008e		       00	   direction  .byte.b
+     52 U008f
+     53 U008f		       00	   gameState  .byte.b
+     54 U0090
+     55 U0090							;------------------------------------------------
+     56 U0090							; Start of ROM
+     57 U0090							;------------------------------------------------
+     58  10000 ????				       SEG	Bank0
+     59  f000					      ORG	$F000	; 4k ROM start point
+     60  f000
+     61  f000				   Start
+      0  f000					      CLEAN_START		; Clear RAM and Registers
+      1  f000		       78		      sei
+      2  f001		       d8		      cld
+      3  f002
+      4  f002		       a2 00		      ldx	#0
+      5  f004		       8a		      txa
+      6  f005		       a8		      tay
+      7  f006		       ca	   .CLEAR_STACK dex
+      8  f007		       9a		      txs
+      9  f008		       48		      pha
+     10  f009		       d0 fb		      bne	.CLEAR_STACK
+     11  f00b
+     63  f00b
+     64  f00b
+     65  f00b		       a9 01		      lda	#PF_REFLECT	; | PF_BALL_SIZE4
+     66  f00d		       85 0a		      sta	CTRLPF
+     67  f00f							;lda		     #2
+     68  f00f							;sta		     ENABL
+     69  f00f		       a9 01		      lda	#1
+     70  f011		       85 83		      sta	level1pos
+     71  f013
+     72  f013		       a9 00		      lda	#0
+     73  f015		       85 81		      sta	horiz
+     74  f017		       85 80		      sta	counter
+     75  f019		       85 8e		      sta	direction
+     76  f01b		       85 8f		      sta	gameState
+     77  f01d		       a9 32		      lda	#50
+     78  f01f		       85 84		      sta	startingx
+     79  f021		       a9 a0		      lda	#160
+     80  f023		       85 82		      sta	vert
+     81  f025		       a9 ad		      lda	#$AD
+     82  f027		       85 07		      sta	COLUP1
+     83  f029
+     84  f029							;setting player0 and missile0 color
+     85  f029		       a9 80		      lda	#$80
+     86  f02b		       85 06		      sta	COLUP0
+     87  f02d
+     88  f02d		       a9 7d		      lda	#125
+     89  f02f		       85 86		      sta	sprite0vert
+     90  f031
+     91  f031		       a9 4b		      lda	#75
+     92  f033		       85 88		      sta	missile0vert
+     93  f035
+     94  f035		       a9 19		      lda	#25
+     95  f037		       85 8a		      sta	ballvert
+     96  f039
+     97  f039		       a9 20		      lda	##%00100000
+     98  f03b		       85 05		      sta	NUSIZ1
+     99  f03d
+    100  f03d		       a9 10		      lda	#%00010000
+    101  f03f		       85 22		      sta	HMM0
+    102  f041
+    103  f041		       a9 c8		      lda	#200
+    104  f043		       85 8d		      sta	frames
+    105  f045
+    106  f045		       a9 0f		      lda	#15
+    107  f047		       85 8c		      sta	lives
+    108  f049
+    109  f049							;------------------------------------------------
+    110  f049							; Vertical Blank
+    111  f049							;------------------------------------------------
+    112  f049				   MainLoop
+    113  f049		       a9 00		      lda	#0
+    114  f04b		       85 01		      sta	VBLANK
+      0  f04d					      VERTICAL_SYNC
+      1  f04d		       a9 0e		      lda	#%1110
+      2  f04f		       85 02	   .VSLP1     sta	WSYNC
+      3  f051		       85 00		      sta	VSYNC
+      4  f053		       4a		      lsr
+      5  f054		       d0 f9		      bne	.VSLP1
+    116  f056		       a5 83		      lda	level1pos
+    117  f058		       c9 01		      cmp	#1
+    118  f05a		       d0 0f		      bne	.finishLoop
+    119  f05c		       e6 83		      inc	level1pos
+    120  f05e		       ea		      nop
+    121  f05f		       85 13		      sta	RESM1
+    122  f061		       ea		      nop
+    123  f062		       ea		      nop
+    124  f063		       ea		      nop
+    125  f064		       ea		      nop
+    126  f065		       ea		      nop
+    127  f066		       ea		      nop
+    128  f067		       ea		      nop
+    129  f068		       ea		      nop
+    130  f069		       85 12		      sta	RESM0
+    131  f06b
+    132  f06b				   .finishLoop
+    133  f06b		       a9 2b		      lda	#43
+    134  f06d		       8d 96 02 	      sta	TIM64T
+    135  f070
+    136  f070							;***** Vertical Blank code goes here
+    137  f070
+    138  f070		       85 02		      sta	WSYNC
+    139  f072		       85 2a		      sta	HMOVE
+    140  f074
+    141  f074				   .waitForVBlank
+    142  f074		       85 2c		      sta	CXCLR
+    143  f076		       ad 84 02 	      lda	INTIM
+    144  f079		       d0 f9		      bne	.waitForVBlank
+    145  f07b
+    146  f07b
+    147  f07b							;------------------------------------------------
+    148  f07b							; Kernel
+    149  f07b							;------------------------------------------------
+    150  f07b				   DrawScreen
+    151  f07b
+    152  f07b		       a5 8f		      lda	gameState
+    153  f07d		       c9 01		      cmp	#1
+    154  f07f		       d0 03		      bne	.level1
+    155  f081		       4c 4b f2 	      jmp	.endGame
+    156  f084
+    157  f084				   .level1
+    158  f084		       a9 04		      lda	#$04
+    159  f086		       85 09		      sta	COLUBK
+    160  f088
+    161  f088		       a9 c3		      lda	#$C3
+    162  f08a		       85 08		      sta	COLUPF
+    163  f08c
+    164  f08c
+    165  f08c		       a6 8c		      ldx	lives
+    166  f08e		       a4 84		      ldy	startingx
+    167  f090		       b9 3f f3 	      lda	.zero_left,y
+    168  f093		       85 02		      sta	WSYNC
+    169  f095		       85 0e		      sta	PF1
+    170  f097
+    171  f097		       ea		      nop
+    172  f098		       ea		      nop
+    173  f099		       ea		      nop
+    174  f09a		       ea		      nop
+    175  f09b		       ea		      nop
+    176  f09c		       ea		      nop
+    177  f09d		       ea		      nop
+    178  f09e		       ea		      nop
+    179  f09f		       ea		      nop
+    180  f0a0		       ea		      nop
+    181  f0a1		       ea		      nop
+    182  f0a2		       ea		      nop
+    183  f0a3		       ea		      nop
+    184  f0a4		       ea		      nop
+    185  f0a5		       ea		      nop
+    186  f0a6
+    187  f0a6
+    188  f0a6		       bd 76 f3 	      lda	.zero_back,x
+    189  f0a9		       85 0e		      sta	PF1
+    190  f0ab		       85 02		      sta	WSYNC
+    191  f0ad
+    192  f0ad		       a9 04		      lda	#4
+    193  f0af		       85 85		      sta	loopscore
+    194  f0b1				   .scoreloop
+    195  f0b1		       e8		      inx
+    196  f0b2		       c8		      iny
+    197  f0b3		       b9 3f f3 	      lda	.zero_left,y
+    198  f0b6		       85 0e		      sta	PF1
+    199  f0b8
+    200  f0b8		       ea		      nop
+    201  f0b9		       ea		      nop
+    202  f0ba		       ea		      nop
+    203  f0bb		       ea		      nop
+    204  f0bc		       ea		      nop
+    205  f0bd		       ea		      nop
+    206  f0be		       ea		      nop
+    207  f0bf		       ea		      nop
+    208  f0c0		       ea		      nop
+    209  f0c1		       ea		      nop
+    210  f0c2		       ea		      nop
+    211  f0c3		       ea		      nop
+    212  f0c4		       ea		      nop
+    213  f0c5		       ea		      nop
+    214  f0c6		       ea		      nop
+    215  f0c7		       ea		      nop
+    216  f0c8
+    217  f0c8		       bd 76 f3 	      lda	.zero_back,x
+    218  f0cb		       85 0e		      sta	PF1
+    219  f0cd		       85 02		      sta	WSYNC
+    220  f0cf		       b9 3f f3 	      lda	.zero_left,y
+    221  f0d2		       85 0e		      sta	PF1
+    222  f0d4
+    223  f0d4		       ea		      nop
+    224  f0d5		       ea		      nop
+    225  f0d6		       ea		      nop
+    226  f0d7		       ea		      nop
+    227  f0d8		       ea		      nop
+    228  f0d9		       ea		      nop
+    229  f0da		       ea		      nop
+    230  f0db		       ea		      nop
+    231  f0dc		       ea		      nop
+    232  f0dd		       ea		      nop
+    233  f0de		       ea		      nop
+    234  f0df		       ea		      nop
+    235  f0e0		       ea		      nop
+    236  f0e1		       ea		      nop
+    237  f0e2		       ea		      nop
+    238  f0e3		       ea		      nop
+    239  f0e4
+    240  f0e4		       bd 76 f3 	      lda	.zero_back,x
+    241  f0e7		       85 0e		      sta	PF1
+    242  f0e9		       85 02		      sta	WSYNC
+    243  f0eb
+    244  f0eb
+    245  f0eb		       c6 85		      dec	loopscore
+    246  f0ed		       d0 c2		      bne	.scoreloop
+    247  f0ef
+    248  f0ef		       a9 00		      lda	#0
+    249  f0f1		       85 0e		      sta	PF1
+    250  f0f3
+    251  f0f3		       85 02		      sta	WSYNC
+    252  f0f5		       85 02		      sta	WSYNC
+    253  f0f7
+    254  f0f7		       a2 00		      ldx	#0
+    255  f0f9		       a0 b4		      ldy	#180
+    256  f0fb		       85 02		      sta	WSYNC
+    257  f0fd
+    258  f0fd		       bd 29 f3 	      lda	.playfield0,x
+    259  f100		       85 0d		      sta	PF0
+    260  f102		       bd 31 f3 	      lda	.playfield1,x
+    261  f105		       85 0e		      sta	PF1
+    262  f107		       bd 38 f3 	      lda	.playfield2,x
+    263  f10a		       85 0f		      sta	PF2
+    264  f10c
+    265  f10c				   .playfieldLoopTop		;16 scan lines, no player, 0-15
+    266  f10c				   .missileLoop01
+    267  f10c							;check missile1
+    268  f10c		       98		      tya
+    269  f10d		       e5 82		      sbc	vert
+    270  f10f		       69 05		      adc	#5
+    271  f111		       b0 07		      bcs	.missileEnable01
+    272  f113		       a9 00		      lda	#0
+    273  f115		       85 1e		      sta	ENAM1
+    274  f117		       4c 1e f1 	      jmp	.playfieldLoopTopEnd
+    275  f11a				   .missileEnable01
+    276  f11a		       a9 02		      lda	#2
+    277  f11c		       85 1e		      sta	ENAM1
+    278  f11e				   .playfieldLoopTopEnd
+    279  f11e		       85 02		      sta	WSYNC
+    280  f120		       88		      dey
+    281  f121		       a5 80		      lda	counter
+    282  f123		       e6 80		      inc	counter
+    283  f125		       c9 0f		      cmp	#15
+    284  f127		       d0 e3		      bne	.playfieldLoopTop
+    285  f129		       e8		      inx
+    286  f12a		       bd 29 f3 	      lda	.playfield0,x
+    287  f12d		       85 0d		      sta	PF0
+    288  f12f		       bd 31 f3 	      lda	.playfield1,x
+    289  f132		       85 0e		      sta	PF1
+    290  f134		       bd 38 f3 	      lda	.playfield2,x
+    291  f137		       85 0f		      sta	PF2
+    292  f139							;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    293  f139				   .playfieldLoopTopMaze		;18 scan lines, player, 15-32; vert 152-170
+    294  f139				   .missileLoop1
+    295  f139							;check missile1
+    296  f139		       98		      tya
+    297  f13a		       e5 82		      sbc	vert
+    298  f13c		       69 05		      adc	#5
+    299  f13e		       b0 07		      bcs	.missileEnable1
+    300  f140		       a9 00		      lda	#0
+    301  f142		       85 1e		      sta	ENAM1
+    302  f144		       4c 4b f1 	      jmp	.playfieldLoopTopMazeEnd
+    303  f147				   .missileEnable1
+    304  f147		       a9 02		      lda	#2
+    305  f149		       85 1e		      sta	ENAM1
+    306  f14b							;do this stuff last in each loop
+    307  f14b				   .playfieldLoopTopMazeEnd
+    308  f14b		       85 02		      sta	WSYNC
+    309  f14d		       88		      dey
+    310  f14e		       a5 80		      lda	counter
+    311  f150		       e6 80		      inc	counter
+    312  f152		       c9 20		      cmp	#32
+    313  f154		       d0 e3		      bne	.playfieldLoopTopMaze
+    314  f156		       e8		      inx
+    315  f157		       bd 29 f3 	      lda	.playfield0,x
+    316  f15a		       85 0d		      sta	PF0
+    317  f15c		       bd 31 f3 	      lda	.playfield1,x
+    318  f15f		       85 0e		      sta	PF1
+    319  f161		       bd 38 f3 	      lda	.playfield2,x
+    320  f164		       85 0f		      sta	PF2
+    321  f166							;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    322  f166				   .playfieldLoopMiddleTop		;37 scan lines, player, 1 obs 32-68;  vert 115-152
+    323  f166				   .missileLoop2
+    324  f166							;check missile1
+    325  f166		       98		      tya
+    326  f167		       e5 82		      sbc	vert
+    327  f169		       69 05		      adc	#5
+    328  f16b		       b0 07		      bcs	.missileEnable2
+    329  f16d		       a9 00		      lda	#0
+    330  f16f		       85 1e		      sta	ENAM1
+    331  f171		       4c 78 f1 	      jmp	.sprite0Loop
+    332  f174				   .missileEnable2
+    333  f174		       a9 02		      lda	#2
+    334  f176		       85 1e		      sta	ENAM1
+    335  f178
+    336  f178				   .sprite0Loop
+    337  f178		       98		      tya
+    338  f179		       e5 86		      sbc	sprite0vert
+    339  f17b		       69 05		      adc	#5
+    340  f17d		       b0 0b		      bcs	.sprite0Enable
+    341  f17f		       a9 22		      lda	#%00100010
+    342  f181		       85 04		      sta	NUSIZ0
+    343  f183		       a9 00		      lda	#0
+    344  f185		       85 1b		      sta	GRP0
+    345  f187		       4c 92 f1 	      jmp	.playfieldLoopMiddleTopEnd
+    346  f18a				   .sprite0Enable
+    347  f18a		       a9 22		      lda	#%00100010
+    348  f18c		       85 04		      sta	NUSIZ0
+    349  f18e		       a9 f0		      lda	#%11110000
+    350  f190		       85 1b		      sta	GRP0
+    351  f192							;do this stuff last in each loop
+    352  f192				   .playfieldLoopMiddleTopEnd
+    353  f192		       85 02		      sta	WSYNC
+    354  f194		       88		      dey
+    355  f195		       a5 80		      lda	counter
+    356  f197		       e6 80		      inc	counter
+    357  f199		       c9 44		      cmp	#68
+    358  f19b		       d0 c9		      bne	.playfieldLoopMiddleTop
+    359  f19d		       e8		      inx
+    360  f19e		       a9 ff		      lda	#%11111111
+    361  f1a0		       85 0d		      sta	PF0
+    362  f1a2		       bd 31 f3 	      lda	.playfield1,x
+    363  f1a5		       85 0e		      sta	PF1
+    364  f1a7		       bd 38 f3 	      lda	.playfield2,x
+    365  f1aa		       85 0f		      sta	PF2
+    366  f1ac							;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    367  f1ac				   .playfieldLoopMiddle 		;38 scan Lines, player, 1 obs	68-105; vert 77-115
+    368  f1ac				   .missileLoop3
+    369  f1ac							;check missile1
+    370  f1ac		       98		      tya
+    371  f1ad		       e5 82		      sbc	vert
+    372  f1af		       69 05		      adc	#5
+    373  f1b1		       b0 07		      bcs	.missileEnable3
+    374  f1b3		       a9 00		      lda	#0
+    375  f1b5		       85 1e		      sta	ENAM1
+    376  f1b7		       4c be f1 	      jmp	.playfieldLoopMiddleEnd
+    377  f1ba				   .missileEnable3
+    378  f1ba		       a9 02		      lda	#2
+    379  f1bc		       85 1e		      sta	ENAM1
+    380  f1be
+    381  f1be							;do this stuff last in each loop
+    382  f1be				   .playfieldLoopMiddleEnd
+    383  f1be		       85 02		      sta	WSYNC
+    384  f1c0		       88		      dey
+    385  f1c1		       a5 80		      lda	counter
+    386  f1c3		       e6 80		      inc	counter
+    387  f1c5		       c9 69		      cmp	#105
+    388  f1c7		       d0 e3		      bne	.playfieldLoopMiddle
+    389  f1c9		       e8		      inx
+    390  f1ca		       bd 31 f3 	      lda	.playfield1,x
+    391  f1cd		       85 0e		      sta	PF1
+    392  f1cf		       bd 38 f3 	      lda	.playfield2,x
+    393  f1d2		       85 0f		      sta	PF2
+    394  f1d4							;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    395  f1d4				   .playfieldLoopMiddleBottom		;37 scan lines, player, one obs. 105-141; vert 40-77
+    396  f1d4				   .missileLoop4
+    397  f1d4							;check missile1
+    398  f1d4		       98		      tya
+    399  f1d5		       e5 82		      sbc	vert
+    400  f1d7		       69 05		      adc	#5
+    401  f1d9		       b0 07		      bcs	.missileEnable4
+    402  f1db		       a9 00		      lda	#0
+    403  f1dd		       85 1e		      sta	ENAM1
+    404  f1df		       4c e6 f1 	      jmp	.missile0Loop
+    405  f1e2				   .missileEnable4
+    406  f1e2		       a9 02		      lda	#2
+    407  f1e4		       85 1e		      sta	ENAM1
+    408  f1e6							;do this stuff last in each loop
+    409  f1e6							;missile 0
+    410  f1e6				   .missile0Loop
+    411  f1e6		       98		      tya
+    412  f1e7		       e5 88		      sbc	missile0vert
+    413  f1e9		       69 07		      adc	#7
+    414  f1eb		       b0 07		      bcs	.missile0Enable
+    415  f1ed		       a9 00		      lda	#0
+    416  f1ef		       85 1d		      sta	ENAM0
+    417  f1f1		       4c f8 f1 	      jmp	.playfieldLoopMiddleBottomEnd
+    418  f1f4				   .missile0Enable
+    419  f1f4		       a9 02		      lda	#2
+    420  f1f6		       85 1d		      sta	ENAM0
+    421  f1f8				   .playfieldLoopMiddleBottomEnd
+    422  f1f8		       85 02		      sta	WSYNC
+    423  f1fa		       88		      dey
+    424  f1fb		       a5 80		      lda	counter
+    425  f1fd		       e6 80		      inc	counter
+    426  f1ff		       c9 8d		      cmp	#141
+    427  f201		       d0 d1		      bne	.playfieldLoopMiddleBottom
+    428  f203		       e8		      inx
+    429  f204		       bd 31 f3 	      lda	.playfield1,x
+    430  f207		       85 0e		      sta	PF1
+    431  f209		       bd 38 f3 	      lda	.playfield2,x
+    432  f20c		       85 0f		      sta	PF2
+    433  f20e							;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    434  f20e				   .playfieldLoopBottomMaze		;14 scan lines, player	141-154; vert 26-40
+    435  f20e				   .missileLoop5
+    436  f20e							;check missile1
+    437  f20e		       98		      tya
+    438  f20f		       e5 82		      sbc	vert
+    439  f211		       69 05		      adc	#5
+    440  f213		       b0 07		      bcs	.missileEnable5
+    441  f215		       a9 00		      lda	#0
+    442  f217		       85 1e		      sta	ENAM1
+    443  f219		       4c 20 f2 	      jmp	.playfieldLoopBottomMazeEnd
+    444  f21c				   .missileEnable5
+    445  f21c		       a9 02		      lda	#2
+    446  f21e		       85 1e		      sta	ENAM1
+    447  f220							;do this stuff last in each loop
+    448  f220				   .playfieldLoopBottomMazeEnd
+    449  f220		       85 02		      sta	WSYNC
+    450  f222		       88		      dey
+    451  f223		       a5 80		      lda	counter
+    452  f225		       e6 80		      inc	counter
+    453  f227		       c9 9a		      cmp	#154
+    454  f229		       d0 e3		      bne	.playfieldLoopBottomMaze
+    455  f22b		       e8		      inx
+    456  f22c		       bd 31 f3 	      lda	.playfield1,x
+    457  f22f		       85 0e		      sta	PF1
+    458  f231		       bd 38 f3 	      lda	.playfield2,x
+    459  f234		       85 0f		      sta	PF2
+    460  f236							;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    461  f236				   .playfieldLoopBottom 		;20 scan lines, no player 154-173
+    462  f236							;do this stuff last in each loop
+    463  f236		       85 02		      sta	WSYNC
+    464  f238		       88		      dey
+    465  f239		       a5 80		      lda	counter
+    466  f23b		       e6 80		      inc	counter
+    467  f23d		       c9 ad		      cmp	#173
+    468  f23f		       d0 f5		      bne	.playfieldLoopBottom
+    469  f241		       85 02		      sta	WSYNC
+    470  f243		       85 02		      sta	WSYNC
+    471  f245		       85 02		      sta	WSYNC
+    472  f247		       85 02		      sta	WSYNC
+    473  f249		       85 02		      sta	WSYNC
+    474  f24b
+    475  f24b				   .endGame
+    476  f24b		       a9 00		      lda	#0
+    477  f24d		       85 09		      sta	COLUBK
+    478  f24f
+    479  f24f							;ball
+    480  f24f				   .ballLoop
+    481  f24f							;	 tya
+    482  f24f							;	sbc		   ballvert
+    483  f24f							;     adc		  #5
+    484  f24f							;    bcs				    .ballEnable
+    485  f24f							;   lda				   #0
+    486  f24f							;  sta 				  ENABL
+    487  f24f							; jmp					 .endPlayfieldLoop
+    488  f24f				   .jmpplayfieldLoop
+    489  f24f							;jmp					.playfieldLoop
+    490  f24f				   .ballEnable
+    491  f24f							;lda					#2
+    492  f24f							;sta					ENABL
+    493  f24f							;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    494  f24f
+    495  f24f							;------------------------------------------------
+    496  f24f							; Overscan
+    497  f24f							;------------------------------------------------
+    498  f24f		       a9 42		      lda	#%01000010
+    499  f251		       85 01		      sta	VBLANK
+    500  f253		       a9 24		      lda	#36
+    501  f255		       8d 96 02 	      sta	TIM64T
+    502  f258
+    503  f258							;***** Overscan Code goes here
+    504  f258		       a9 00		      lda	#%00000000
+    505  f25a		       85 0d		      sta	PF0
+    506  f25c		       85 0e		      sta	PF1
+    507  f25e		       85 0f		      sta	PF2
+    508  f260		       a9 00		      lda	#0
+    509  f262		       85 80		      sta	counter
+    510  f264
+    511  f264
+    512  f264							;collision detection will happen between Missile0
+    513  f264							;and other stuff, the player controls
+    514  f264							;missile0
+    515  f264							;addresses for collision:
+    516  f264							;CXM0P 	       ;missile collides with player0 or1
+    517  f264							;CXM0FB		;missile collides with PlayField Or Ball
+    518  f264							;CXPPMM		;Players collide or missiles collide
+    519  f264							;sta	     CXCLR clears the collision flags
+    520  f264
+    521  f264							;check for player collision
+    522  f264
+    523  f264				   .player0movement
+    524  f264		       a9 d0		      lda	#%11010000
+    525  f266		       85 20		      sta	HMP0
+    526  f268				   .obstacleCollision
+    527  f268		       a5 04		      lda	CXM0FB
+    528  f26a		       29 80		      and	#%10000000
+    529  f26c		       d0 03		      bne	.changeDirection
+    530  f26e		       4c 8a f2 	      jmp	.playerCollide
+    531  f271				   .changeDirection
+    532  f271		       a5 8e		      lda	direction
+    533  f273		       c9 01		      cmp	#1
+    534  f275		       d0 0b		      bne	.missile0right
+    535  f277							;jmp		.missile0left
+    536  f277				   .missile0left
+    537  f277		       a9 10		      lda	#%00010000
+    538  f279		       85 22		      sta	HMM0
+    539  f27b		       a9 00		      lda	#0
+    540  f27d		       85 8e		      sta	direction
+    541  f27f		       4c 8a f2 	      jmp	.playerCollide
+    542  f282				   .missile0right
+    543  f282		       a9 f0		      lda	#%11110000
+    544  f284		       85 22		      sta	HMM0
+    545  f286		       a9 01		      lda	#1
+    546  f288		       85 8e		      sta	direction
+    547  f28a				   .playerCollide
+    548  f28a		       a5 05		      lda	CXM1FB
+    549  f28c		       29 80		      and	#%10000000
+    550  f28e		       d0 1b		      bne	.playerDied
+    551  f290
+    552  f290		       a5 01		      lda	CXM1P
+    553  f292		       29 80		      and	#%10000000
+    554  f294		       d0 15		      bne	.playerDied
+    555  f296
+    556  f296		       a5 05		      lda	CXM1FB
+    557  f298		       29 40		      and	#%01000000
+    558  f29a		       d0 0f		      bne	.playerDied
+    559  f29c
+    560  f29c		       a5 07		      lda	CXPPMM
+    561  f29e		       29 40		      and	#%01000000
+    562  f2a0		       d0 09		      bne	.playerDied
+    563  f2a2
+    564  f2a2		       a5 01		      lda	CXM1P
+    565  f2a4		       29 40		      and	#%01000000
+    566  f2a6		       d0 19		      bne	.endLevel
+    567  f2a8		       4c c1 f2 	      jmp	.playerMovement
+    568  f2ab
+    569  f2ab				   .playerDied
+    570  f2ab		       a9 01		      lda	#1
+    571  f2ad		       85 83		      sta	level1pos
+    572  f2af		       a9 a0		      lda	#160
+    573  f2b1		       85 82		      sta	vert
+    574  f2b3		       c6 8c		      dec	lives
+    575  f2b5		       c6 8c		      dec	lives
+    576  f2b7		       c6 8c		      dec	lives
+    577  f2b9		       c6 8c		      dec	lives
+    578  f2bb		       c6 8c		      dec	lives
+    579  f2bd		       c9 00		      cmp	#0
+    580  f2bf		       f0 60		      beq	.gameOver
+    581  f2c1
+    582  f2c1				   .endLevel
+    583  f2c1
+    584  f2c1
+    585  f2c1				   .playerMovement
+    586  f2c1		       a9 00		      lda	#%00000000
+    587  f2c3		       85 23		      sta	HMM1
+    588  f2c5		       ad 80 02 	      lda	SWCHA
+    589  f2c8		       29 80		      and	#%10000000
+    590  f2ca		       f0 18		      beq	.right
+    591  f2cc		       ad 80 02 	      lda	SWCHA
+    592  f2cf		       29 40		      and	#%01000000
+    593  f2d1		       f0 18		      beq	.left
+    594  f2d3		       ad 80 02 	      lda	SWCHA
+    595  f2d6		       29 10		      and	#%00010000
+    596  f2d8		       f0 1b		      beq	.up
+    597  f2da		       ad 80 02 	      lda	SWCHA
+    598  f2dd		       29 20		      and	#%00100000
+    599  f2df		       f0 19		      beq	.down
+    600  f2e1		       4c ff f2 	      jmp	.timer
+    601  f2e4				   .right
+    602  f2e4		       a9 f0		      lda	#%11110000
+    603  f2e6		       85 23		      sta	HMM1
+    604  f2e8		       4c f2 f2 	      jmp	.moveHoriz
+    605  f2eb				   .left
+    606  f2eb		       a9 10		      lda	#%00010000
+    607  f2ed		       85 23		      sta	HMM1
+    608  f2ef		       4c f2 f2 	      jmp	.moveHoriz
+    609  f2f2				   .moveHoriz
+    610  f2f2		       4c ff f2 	      jmp	.timer
+    611  f2f5				   .up
+    612  f2f5		       e6 82		      inc	vert
+    613  f2f7		       4c ff f2 	      jmp	.timer
+    614  f2fa				   .down
+    615  f2fa		       c6 82		      dec	vert
+    616  f2fc		       4c ff f2 	      jmp	.timer
+    617  f2ff
+    618  f2ff
+    619  f2ff				   .timer
+    620  f2ff		       a5 8d		      lda	frames
+    621  f301		       e9 01		      sbc	#1
+    622  f303		       85 8d		      sta	frames
+    623  f305		       c9 00		      cmp	#0
+    624  f307		       f0 03		      beq	.second
+    625  f309		       4c 21 f3 	      jmp	.waitForOverscan
+    626  f30c
+    627  f30c				   .second
+    628  f30c		       c6 84		      dec	startingx
+    629  f30e		       c6 84		      dec	startingx
+    630  f310		       c6 84		      dec	startingx
+    631  f312		       c6 84		      dec	startingx
+    632  f314		       c6 84		      dec	startingx
+    633  f316		       c9 00		      cmp	#0
+    634  f318		       f0 07		      beq	.gameOver
+    635  f31a		       a9 c8		      lda	#200
+    636  f31c		       85 8d		      sta	frames
+    637  f31e		       4c 21 f3 	      jmp	.waitForOverscan
+    638  f321				   .gameOver
+    639  f321
+    640  f321
+    641  f321				   .waitForOverscan
+    642  f321		       ad 84 02 	      lda	INTIM
+    643  f324		       d0 fb		      bne	.waitForOverscan
+    644  f326
+    645  f326		       4c 49 f0 	      jmp	MainLoop
+    646  f329
+    647  f329							;------------------------------------------------
+    648  f329							; ROM Tables
+    649  f329							;------------------------------------------------
+    650  f329							;***** ROM tables go here
+    651  f329				   .playfield0		;11110000	  playfield 0 only reads these bits marked 1
+    652  f329							;break into segments of 16 for top, 18 for top of maze,112 for middle of maze, 14 for bottom of maze, 20 for bottom
+    653  f329							;202
+    654  f329							;16
+    655  f329		       ff		      .byte.b	%11111111
+    656  f32a							;.byte 	       %11111111
+    657  f32a							;.byte 	       %11111111
+    658  f32a							;.byte 	       %11111111
+    659  f32a							;.byte 	       %11111111
+    660  f32a							;.byte 	       %11111111
+    661  f32a							;.byte 	       %11111111
+    662  f32a							;.byte 	       %11111111
+    663  f32a							;.byte 	       %11111111
+    664  f32a							;.byte 	       %11111111
+    665  f32a							;.byte 	       %11111111
+    666  f32a							;.byte 	       %11111111
+    667  f32a							;.byte 	       %11111111
+    668  f32a							;.byte 	       %11111111
+    669  f32a							;.byte 	       %11111111
+    670  f32a							;.byte 	       %11111111
+    671  f32a
+    672  f32a							;18
+    673  f32a		       30		      .byte.b	%00110000
+    674  f32b							;.byte 	       %00110000
+    675  f32b							;.byte 	       %00110000
+    676  f32b							;.byte 	       %00110000
+    677  f32b							;.byte 	       %00110000
+    678  f32b							;.byte 	       %00110000
+    679  f32b							;.byte 	       %00110000
+    680  f32b							;.byte 	       %00110000
+    681  f32b							;.byte 	       %00110000
+    682  f32b							;.byte 	       %00110000
+    683  f32b							;.byte 	       %00110000
+    684  f32b							;.byte 	       %00110000
+    685  f32b							;.byte 	       %00110000
+    686  f32b							;.byte 	       %00110000
+    687  f32b							;.byte 	       %00110000
+    688  f32b							;.byte 	       %00110000
+    689  f32b							;.byte 	       %00110000
+    690  f32b							;.byte				 %00110000
+    691  f32b							;148
+    692  f32b		       fc		      .byte.b	%11111100
+    693  f32c							;.byte 	       %11111100
+    694  f32c							;.byte 	       %11111100
+    695  f32c							;.byte 	       %11111100
+    696  f32c							;.byte 	       %11111100
+    697  f32c							;.byte 	       %11111100
+    698  f32c							;.byte 	       %11111100
+    699  f32c							;.byte 	       %11111100
+    700  f32c							;.byte 	       %11111100
+    701  f32c							;.byte 	       %11111100
+    702  f32c							;.byte 	       %11111100
+    703  f32c							;.byte 	       %11111100
+    704  f32c							;.byte 	       %11111100
+    705  f32c							;.byte 	       %11111100
+    706  f32c							;.byte 	       %11111100
+    707  f32c							;.byte 	       %11111100
+    708  f32c							;.byte 	       %11111100
+    709  f32c							;.byte 	       %11111100
+    710  f32c							;.byte 	       %11111100
+    711  f32c							;.byte 	       %11111100
+    712  f32c							;.byte 	       %11111100
+    713  f32c							;.byte 	       %11111100
+    714  f32c							;.byte 	       %11111100
+    715  f32c							;.byte 	       %11111100
+    716  f32c							;.byte 	       %11111100
+    717  f32c							;.byte 	       %11111100
+    718  f32c							;.byte 	       %11111100
+    719  f32c							;.byte 	       %11111100
+    720  f32c							;.byte 	       %11111100
+    721  f32c							;.byte 	       %11111100
+    722  f32c							;.byte 	       %11111100
+    723  f32c							;.byte 	       %11111100
+    724  f32c							;.byte 	       %11111100
+    725  f32c							;.byte 	       %11111100
+    726  f32c							;.byte 	       %11111100
+    727  f32c							;.byte 	       %11111100
+    728  f32c							;.byte 	       %11111100
+    729  f32c							;.byte 	       %11111100
+    730  f32c							;.byte 	       %11111100
+    731  f32c							;.byte 	       %11111100
+    732  f32c							;.byte 	       %11111100
+    733  f32c							;.byte 	       %11111100
+    734  f32c							;.byte 	       %11111100
+    735  f32c							;.byte 	       %11111100
+    736  f32c							;.byte 	       %11111100
+    737  f32c							;.byte 	       %11111100
+    738  f32c							;.byte 	       %11111100
+    739  f32c							;.byte 	       %11111100
+    740  f32c							;.byte 	       %11111100
+    741  f32c							;.byte 	       %11111100
+    742  f32c							;.byte 	       %11111100
+    743  f32c							;.byte 	       %11111100
+    744  f32c							;.byte 	       %11111100
+    745  f32c							;.byte 	       %11111100
+    746  f32c							;.byte 	       %11111100
+    747  f32c							;.byte 	       %11111100
+    748  f32c							;.byte 	       %11111100
+    749  f32c							;.byte 	       %11111100
+    750  f32c							;.byte 	       %11111100
+    751  f32c							;.byte 	       %11111100
+    752  f32c							;.byte 	       %11111100
+    753  f32c							;.byte 	       %11111100
+    754  f32c							;.byte 	       %11111100
+    755  f32c							;.byte 	       %11111100
+    756  f32c							;.byte 	       %11111100
+    757  f32c							;.byte 	       %11111100
+    758  f32c							;.byte 	       %11111100
+    759  f32c							;.byte 	       %11111100
+    760  f32c							;.byte 	       %11111100
+    761  f32c							;.byte 	       %11111100
+    762  f32c							;.byte 	       %11111100
+    763  f32c							;.byte 	       %11111100
+    764  f32c							;.byte 	       %11111100
+    765  f32c							;.byte 	       %11111100
+    766  f32c							;.byte 	       %11111100
+    767  f32c							;.byte 	       %11111100
+    768  f32c							;.byte 	       %11111100
+    769  f32c							;.byte 	       %11111100
+    770  f32c							;.byte 	       %11111100
+    771  f32c							;.byte 	       %11111100
+    772  f32c							;.byte 	       %11111100
+    773  f32c							;.byte 	       %11111100
+    774  f32c							;.byte 	       %11111100
+    775  f32c							;.byte 	       %11111100
+    776  f32c							;.byte 	       %11111100
+    777  f32c							;.byte 	       %11111100
+    778  f32c							;.byte 	       %11111100
+    779  f32c							;.byte 	       %11111100
+    780  f32c							;.byte 	       %11111100
+    781  f32c							;.byte 	       %11111100
+    782  f32c							;.byte 	       %11111100
+    783  f32c							;.byte 	       %11111100
+    784  f32c							;.byte 	       %11111100
+    785  f32c							;.byte 	       %11111100
+    786  f32c							;.byte 	       %11111100
+    787  f32c							;.byte 	       %11111100
+    788  f32c							;.byte 	       %11111100
+    789  f32c							;.byte 	       %11111100
+    790  f32c							;.byte 	       %11111100
+    791  f32c							;.byte 	       %11111100
+    792  f32c							;.byte 	       %11111100
+    793  f32c							;.byte 	       %11111100
+    794  f32c							;.byte 	       %11111100
+    795  f32c							;.byte 	       %11111100
+    796  f32c							;.byte 	       %11111100
+    797  f32c							;.byte 	       %11111100
+    798  f32c							;.byte 	       %11111100
+    799  f32c							;.byte 	       %11111100
+    800  f32c							;.byte 	       %11111100
+    801  f32c							;.byte 	       %11111100
+    802  f32c							;.byte 	       %11111100
+    803  f32c							;.byte 	       %11111100
+    804  f32c							;.byte 	       %11111100
+    805  f32c							;.byte 	       %11111100
+    806  f32c							;.byte 	       %11111100
+    807  f32c							;.byte 	       %11111100
+    808  f32c							;.byte 	       %11111100
+    809  f32c							;.byte 	       %11111100
+    810  f32c							;.byte 	       %11111100
+    811  f32c							;.byte 	       %11111100
+    812  f32c							;.byte 	       %11111100
+    813  f32c							;.byte 	       %11111100
+    814  f32c							;.byte 	       %11111100
+    815  f32c							;.byte 	       %11111100
+    816  f32c							;.byte 	       %11111100
+    817  f32c							;.byte 	       %11111100
+    818  f32c							;.byte 	       %11111100
+    819  f32c							;.byte 	       %11111100
+    820  f32c							;.byte 	       %11111100
+    821  f32c							;.byte 	       %11111100
+    822  f32c							;.byte 	       %11111100
+    823  f32c							;.byte 	       %11111100
+    824  f32c							;.byte 	       %11111100
+    825  f32c							;.byte 	       %11111100
+    826  f32c							;.byte 	       %11111100
+    827  f32c							;.byte 	       %11111100
+    828  f32c							;.byte 	       %11111100
+    829  f32c							;.byte 	       %11111100
+    830  f32c							;.byte 	       %11111100
+    831  f32c							;.byte 	       %11111100
+    832  f32c							;.byte 	       %11111100
+    833  f32c							;.byte 	       %11111100
+    834  f32c							;.byte 	       %11111100
+    835  f32c							;.byte 	       %11111100
+    836  f32c							;.byte 	       %11111100
+    837  f32c							;.byte 	       %11111100
+    838  f32c							;.byte 	       %11111100
+    839  f32c							;.byte 	       %11111100
+    840  f32c							;21
+    841  f32c		       ff		      .byte.b	%11111111
+    842  f32d		       ff		      .byte.b	%11111111
+    843  f32e		       ff		      .byte.b	%11111111
+    844  f32f		       ff		      .byte.b	%11111111
+    845  f330		       ff		      .byte.b	%11111111
+    846  f331							;.byte 	       %11111111
+    847  f331							;.byte 	       %11111111
+    848  f331							;.byte 	       %11111111
+    849  f331							;.byte 	       %11111111
+    850  f331							;.byte 	       %11111111
+    851  f331							;.byte 	       %11111111
+    852  f331							;.byte 	       %11111111
+    853  f331							;.byte 	       %11111111
+    854  f331							;.byte 	       %11111111
+    855  f331							;.byte 	       %11111111
+    856  f331							;.byte 	       %11111111
+    857  f331							;.byte 	       %11111111
+    858  f331							;.byte 	       %11111111
+    859  f331							;.byte 	       %11111111
+    860  f331							;.byte 	       %11111111
+    861  f331							;.byte 	       %11111111
+    862  f331							;.byte 	       %11111111
+    863  f331							;.byte 	       %11111111
+    864  f331							;.byte 	       %11111111
+    865  f331							;.byte 	       %11111111
+    866  f331
+    867  f331				   .playfield1		;180
+    868  f331							;16
+    869  f331		       ff		      .byte.b	%11111111
+    870  f332							;.byte 	       %11111111
+    871  f332							;.byte 	       %11111111
+    872  f332							;.byte 	       %11111111
+    873  f332							;.byte 	       %11111111
+    874  f332							;.byte 	       %11111111
+    875  f332							;.byte 	       %11111111
+    876  f332							;.byte 	       %11111111
+    877  f332							;.byte 	       %11111111
+    878  f332							;.byte 	       %11111111
+    879  f332							;.byte 	       %11111111
+    880  f332							;.byte 	       %11111111
+    881  f332							;.byte 	       %11111111
+    882  f332							;.byte 	       %11111111
+    883  f332							;.byte 	       %11111111
+    884  f332							;.byte 	       %11111111
+    885  f332							;18
+    886  f332		       0f		      .byte.b	%00001111
+    887  f333							;.byte 	       %00001111
+    888  f333							;.byte 	       %00001111
+    889  f333							;.byte 	       %00001111
+    890  f333							;.byte 	       %00001111
+    891  f333							;.byte 	       %00001111
+    892  f333							;.byte 	       %00001111
+    893  f333							;.byte 	       %00001111
+    894  f333							;.byte 	       %00001111
+    895  f333							;.byte 	       %00001111
+    896  f333							;.byte 	       %00001111
+    897  f333							;.byte 	       %00001111
+    898  f333							;.byte 	       %00001111
+    899  f333							;.byte 	       %00001111
+    900  f333							;.byte 	       %00001111
+    901  f333							;.byte 	       %00001111
+    902  f333							;.byte 	       %00001111
+    903  f333							;.byte 	       %00001111
+    904  f333
+    905  f333							;37
+    906  f333		       0f		      .byte.b	%00001111
+    907  f334							;.byte 	       %00001111
+    908  f334							;.byte 	       %00001111
+    909  f334							;.byte 	       %00001111
+    910  f334							;.byte 	       %00001111
+    911  f334							;.byte 	       %00001111
+    912  f334							;.byte 	       %00001111
+    913  f334							;.byte 	       %00001111
+    914  f334							;.byte 	       %00001111
+    915  f334							;.byte 	       %00001111
+    916  f334							;.byte 	       %00001111
+    917  f334							;.byte 	       %00001111
+    918  f334							;.byte 	       %00001111
+    919  f334							;.byte 	       %00001111
+    920  f334							;.byte 	       %00001111
+    921  f334							;.byte 	       %00001111
+    922  f334							;.byte 	       %00001111
+    923  f334							;.byte 	       %00001111
+    924  f334							;.byte 	       %00001111
+    925  f334							;.byte 	       %00001111
+    926  f334							;.byte 	       %00001111
+    927  f334							;.byte 	       %00001111
+    928  f334							;.byte 	       %00001111
+    929  f334							;.byte 	       %00001111
+    930  f334							;.byte 	       %00001111
+    931  f334							;.byte 	       %00001111
+    932  f334							;.byte 	       %00001111
+    933  f334							;.byte 	       %00001111
+    934  f334							;.byte 	       %00001111
+    935  f334							;.byte 	       %00001111
+    936  f334							;.byte 	       %00001111
+    937  f334							;.byte 	       %00001111
+    938  f334							;.byte 	       %00001111
+    939  f334							;.byte 	       %00001111
+    940  f334							;.byte 	       %00001111
+    941  f334							;.byte 	       %00001111
+    942  f334							;.byte 	       %00001111
+    943  f334
+    944  f334							;38
+    945  f334		       0f		      .byte.b	%00001111
+    946  f335							;.byte 	       %00001111
+    947  f335							;.byte 	       %00001111
+    948  f335							;.byte 	       %00001111
+    949  f335							;.byte 	       %00001111
+    950  f335							;.byte 	       %00001111
+    951  f335							;.byte 	       %00001111
+    952  f335							;.byte 	       %00001111
+    953  f335							;.byte 	       %00001111
+    954  f335							;.byte 	       %00001111
+    955  f335							;.byte 	       %00001111
+    956  f335							;.byte 	       %00001111
+    957  f335							;.byte 	       %00001111
+    958  f335							;.byte 	       %00001111
+    959  f335							;.byte 	       %00001111
+    960  f335							;.byte 	       %00001111
+    961  f335							;.byte 	       %00001111
+    962  f335							;.byte 	       %00001111
+    963  f335							;.byte 	       %00001111
+    964  f335							;.byte 	       %00001111
+    965  f335							;.byte 	       %00001111
+    966  f335							;.byte 	       %00001111
+    967  f335							;.byte 	       %00001111
+    968  f335							;.byte 	       %00001111
+    969  f335							;.byte 	       %00001111
+    970  f335							;.byte 	       %00001111
+    971  f335							;.byte 	       %00001111
+    972  f335							;.byte 	       %00001111
+    973  f335							;.byte 	       %00001111
+    974  f335							;.byte 	       %00001111
+    975  f335							;.byte 	       %00001111
+    976  f335							;.byte 	       %00001111
+    977  f335							;.byte 	       %00001111
+    978  f335							;.byte 	       %00001111
+    979  f335							;.byte 	       %00001111
+    980  f335							;.byte 	       %00001111
+    981  f335							;.byte 	       %00001111
+    982  f335							;.byte 	       %00001111
+    983  f335
+    984  f335							;37
+    985  f335		       0f		      .byte.b	%00001111
+    986  f336							;.byte 	       %00001111
+    987  f336							;.byte 	       %00001111
+    988  f336							;.byte 	       %00001111
+    989  f336							;.byte 	       %00001111
+    990  f336							;.byte 	       %00001111
+    991  f336							;.byte 	       %00001111
+    992  f336							;.byte 	       %00001111
+    993  f336							;.byte 	       %00001111
+    994  f336							;.byte 	       %00001111
+    995  f336							;.byte 	       %00001111
+    996  f336							;.byte 	       %00001111
+    997  f336							;.byte 	       %00001111
+    998  f336							;.byte 	       %00001111
+    999  f336							;.byte 	       %00001111
+   1000  f336							;.byte 	       %00001111
+   1001  f336							;.byte 	       %00001111
+   1002  f336							;.byte 	       %00001111
+   1003  f336							;.byte 	       %00001111
+   1004  f336							;.byte 	       %00001111
+   1005  f336							;.byte 	       %00001111
+   1006  f336							;.byte 	       %00001111
+   1007  f336							;.byte 	       %00001111
+   1008  f336							;.byte 	       %00001111
+   1009  f336							;.byte 	       %00001111
+   1010  f336							;.byte 	       %00001111
+   1011  f336							;.byte 	       %00001111
+   1012  f336							;.byte 	       %00001111
+   1013  f336							;.byte 	       %00001111
+   1014  f336							;.byte 	       %00001111
+   1015  f336							;.byte 	       %00001111
+   1016  f336							;.byte 	       %00001111
+   1017  f336							;.byte 	       %00001111
+   1018  f336							;.byte 	       %00001111
+   1019  f336							;.byte 	       %00001111
+   1020  f336							;.byte 	       %00001111
+   1021  f336							;.byte 	       %00001111
+   1022  f336							;14
+   1023  f336		       00		      .byte.b	%00000000
+   1024  f337							;.byte 	       %00000000
+   1025  f337							;.byte 	       %00000000
+   1026  f337							;.byte 	       %00000000
+   1027  f337							;.byte 	       %00000000
+   1028  f337							;.byte 	       %00000000
+   1029  f337							;.byte 	       %00000000
+   1030  f337							;.byte 	       %00000000
+   1031  f337							;.byte 	       %00000000
+   1032  f337							;.byte 	       %00000000
+   1033  f337							;.byte 	       %00000000
+   1034  f337							;.byte 	       %00000000
+   1035  f337							;.byte 	       %00000000
+   1036  f337							;.byte 	       %00000000
+   1037  f337							;20
+   1038  f337		       ff		      .byte.b	%11111111
+   1039  f338							;.byte 	       %11111111
+   1040  f338							;.byte 	       %11111111
+   1041  f338							;.byte 	       %11111111
+   1042  f338							;.byte 	       %11111111
+   1043  f338							;.byte 	       %11111111
+   1044  f338							;.byte 	       %11111111
+   1045  f338							;.byte 	       %11111111
+   1046  f338							;.byte 	       %11111111
+   1047  f338							;.byte 	       %11111111
+   1048  f338							;.byte 	       %11111111
+   1049  f338							;.byte 	       %11111111
+   1050  f338							;.byte 	       %11111111
+   1051  f338							;.byte 	       %11111111
+   1052  f338							;.byte 	       %11111111
+   1053  f338							;.byte 	       %11111111
+   1054  f338							;.byte 	       %11111111
+   1055  f338							;.byte 	       %11111111
+   1056  f338							;.byte 	       %11111111
+   1057  f338							;.byte 	       %11111111
+   1058  f338				   .playfield2		;180
+   1059  f338							;16
+   1060  f338		       ff		      .byte.b	%11111111
+   1061  f339							;.byte 	       %11111111
+   1062  f339							;.byte 	       %11111111
+   1063  f339							;.byte 	       %11111111
+   1064  f339							;.byte 	       %11111111
+   1065  f339							;.byte 	       %11111111
+   1066  f339							;.byte 	       %11111111
+   1067  f339							;.byte 	       %11111111
+   1068  f339							;.byte 	       %11111111
+   1069  f339							;.byte 	       %11111111
+   1070  f339							;.byte 	       %11111111
+   1071  f339							;.byte 	       %11111111
+   1072  f339							;.byte 	       %11111111
+   1073  f339							;.byte 	       %11111111
+   1074  f339							;.byte 	       %11111111
+   1075  f339							;.byte 	       %11111111
+   1076  f339							;18
+   1077  f339		       00		      .byte.b	%00000000
+   1078  f33a							;.byte 	       %00000000
+   1079  f33a							;.byte 	       %00000000
+   1080  f33a							;.byte 	       %00000000
+   1081  f33a							;.byte 	       %00000000
+   1082  f33a							;.byte 	       %00000000
+   1083  f33a							;.byte 	       %00000000
+   1084  f33a							;.byte 	       %00000000
+   1085  f33a							;.byte 	       %00000000
+   1086  f33a							;.byte 	       %00000000
+   1087  f33a							;.byte 	       %00000000
+   1088  f33a							;.byte 	       %00000000
+   1089  f33a							;.byte 	       %00000000
+   1090  f33a							;.byte 	       %00000000
+   1091  f33a							;.byte 	       %00000000
+   1092  f33a							;.byte 	       %00000000
+   1093  f33a							;.byte 	       %00000000
+   1094  f33a							;.byte 	       %00000000
+   1095  f33a							;37
+   1096  f33a		       80		      .byte.b	%10000000
+   1097  f33b							;.byte 	       %10000000
+   1098  f33b							;.byte 	       %10000000
+   1099  f33b							;.byte 	       %10000000
+   1100  f33b							;.byte 	       %10000000
+   1101  f33b							;.byte 	       %10000000
+   1102  f33b							;.byte 	       %10000000
+   1103  f33b							;.byte 	       %10000000
+   1104  f33b							;.byte 	       %10000000
+   1105  f33b							;.byte 	       %10000000
+   1106  f33b							;.byte 	       %10000000
+   1107  f33b							;.byte 	       %10000000
+   1108  f33b							;.byte 	       %10000000
+   1109  f33b							;.byte 	       %10000000
+   1110  f33b							;.byte 	       %10000000
+   1111  f33b							;.byte 	       %10000000
+   1112  f33b							;.byte 	       %10000000
+   1113  f33b							;.byte 	       %10000000
+   1114  f33b							;.byte 	       %10000000
+   1115  f33b							;.byte 	       %10000000
+   1116  f33b							;.byte 	       %10000000
+   1117  f33b							;.byte 	       %10000000
+   1118  f33b							;.byte 	       %10000000
+   1119  f33b							;.byte 	       %10000000
+   1120  f33b							;.byte 	       %10000000
+   1121  f33b							;.byte 	       %10000000
+   1122  f33b							;.byte 	       %10000000
+   1123  f33b							;.byte 	       %10000000
+   1124  f33b							;.byte 	       %10000000
+   1125  f33b							;.byte 	       %10000000
+   1126  f33b							;.byte 	       %10000000
+   1127  f33b							;.byte 	       %10000000
+   1128  f33b							;.byte 	       %10000000
+   1129  f33b							;.byte 	       %10000000
+   1130  f33b							;.byte 	       %10000000
+   1131  f33b							;.byte 	       %10000000
+   1132  f33b							;.byte 	       %10000000
+   1133  f33b
+   1134  f33b							;38
+   1135  f33b		       80		      .byte.b	%10000000
+   1136  f33c							;.byte 	       %10000000
+   1137  f33c							;.byte 	       %10000000
+   1138  f33c							;.byte 	       %10000000
+   1139  f33c							;.byte 	       %10000000
+   1140  f33c							;.byte 	       %10000000
+   1141  f33c							;.byte 	       %10000000
+   1142  f33c							;.byte 	       %10000000
+   1143  f33c							;.byte 	       %10000000
+   1144  f33c							;.byte 	       %10000000
+   1145  f33c							;.byte 	       %10000000
+   1146  f33c							;.byte 	       %10000000
+   1147  f33c							;.byte 	       %10000000
+   1148  f33c							;.byte 	       %10000000
+   1149  f33c							;.byte 	       %10000000
+   1150  f33c							;.byte 	       %10000000
+   1151  f33c							;.byte 	       %10000000
+   1152  f33c							;.byte 	       %10000000
+   1153  f33c							;.byte 	       %10000000
+   1154  f33c							;.byte 	       %10000000
+   1155  f33c							;.byte 	       %10000000
+   1156  f33c							;.byte 	       %10000000
+   1157  f33c							;.byte 	       %10000000
+   1158  f33c							;.byte 	       %10000000
+   1159  f33c							;.byte 	       %10000000
+   1160  f33c							;.byte 	       %10000000
+   1161  f33c							;.byte 	       %10000000
+   1162  f33c							;.byte 	       %10000000
+   1163  f33c							;.byte 	       %10000000
+   1164  f33c							;.byte 	       %10000000
+   1165  f33c							;.byte 	       %10000000
+   1166  f33c							;.byte 	       %10000000
+   1167  f33c							;.byte 	       %10000000
+   1168  f33c							;.byte 	       %10000000
+   1169  f33c							;.byte 	       %10000000
+   1170  f33c							;.byte 	       %10000000
+   1171  f33c							;.byte 	       %10000000
+   1172  f33c							;.byte 	       %10000000
+   1173  f33c
+   1174  f33c							;37
+   1175  f33c		       80		      .byte.b	%10000000
+   1176  f33d							;.byte 	       %10000000
+   1177  f33d							;.byte 	       %10000000
+   1178  f33d							;.byte 	       %10000000
+   1179  f33d							;.byte 	       %10000000
+   1180  f33d							;.byte 	       %10000000
+   1181  f33d							;.byte 	       %10000000
+   1182  f33d							;.byte 	       %10000000
+   1183  f33d							;.byte 	       %10000000
+   1184  f33d							;.byte 	       %10000000
+   1185  f33d							;.byte 	       %10000000
+   1186  f33d							;.byte 	       %10000000
+   1187  f33d							;.byte 	       %10000000
+   1188  f33d							;.byte 	       %10000000
+   1189  f33d							;.byte 	       %10000000
+   1190  f33d							;.byte 	       %10000000
+   1191  f33d							;.byte 	       %10000000
+   1192  f33d							;.byte 	       %10000000
+   1193  f33d							;.byte 	       %10000000
+   1194  f33d							;.byte 	       %10000000
+   1195  f33d							;.byte 	       %10000000
+   1196  f33d							;.byte 	       %10000000
+   1197  f33d							;.byte 	       %10000000
+   1198  f33d							;.byte 	       %10000000
+   1199  f33d							;.byte 	       %10000000
+   1200  f33d							;.byte 	       %10000000
+   1201  f33d							;.byte 	       %10000000
+   1202  f33d							;.byte 	       %10000000
+   1203  f33d							;.byte 	       %10000000
+   1204  f33d							;.byte 	       %10000000
+   1205  f33d							;.byte 	       %10000000
+   1206  f33d							;.byte 	       %10000000
+   1207  f33d							;.byte 	       %10000000
+   1208  f33d							;.byte 	       %10000000
+   1209  f33d							;.byte 	       %10000000
+   1210  f33d							;.byte 	       %10000000
+   1211  f33d							;.byte 	       %10000000
+   1212  f33d							;14
+   1213  f33d		       80		      .byte.b	%10000000
+   1214  f33e							;.byte 	       %10000000
+   1215  f33e							;.byte 	       %10000000
+   1216  f33e							;.byte 	       %10000000
+   1217  f33e							;.byte 	       %10000000
+   1218  f33e							;.byte 	       %10000000
+   1219  f33e							;.byte 	       %10000000
+   1220  f33e							;.byte 	       %10000000
+   1221  f33e							;.byte 	       %10000000
+   1222  f33e							;.byte 	       %10000000
+   1223  f33e							;.byte 	       %10000000
+   1224  f33e							;.byte 	       %10000000
+   1225  f33e							;.byte 	       %10000000
+   1226  f33e							;.byte 	       %10000000
+   1227  f33e							;20
+   1228  f33e		       ff		      .byte.b	%11111111
+   1229  f33f							;.byte 	       %11111111
+   1230  f33f							;.byte 	       %11111111
+   1231  f33f							;.byte 	       %11111111
+   1232  f33f							;.byte 	       %11111111
+   1233  f33f							;.byte 	       %11111111
+   1234  f33f							;.byte 	       %11111111
+   1235  f33f							;.byte 	       %11111111
+   1236  f33f							;.byte 	       %11111111
+   1237  f33f							;.byte 	       %11111111
+   1238  f33f							;.byte 	       %11111111
+   1239  f33f							;.byte 	       %11111111
+   1240  f33f							;.byte 	       %11111111
+   1241  f33f							;.byte 	       %11111111
+   1242  f33f							;.byte 	       %11111111
+   1243  f33f							;.byte 	       %11111111
+   1244  f33f							;.byte 	       %11111111
+   1245  f33f							;.byte 	       %11111111
+   1246  f33f							;.byte 	       %11111111
+   1247  f33f							;.byte 	       %11111111
+   1248  f33f				   .zero_left
+   1249  f33f		       e0		      .byte.b	%11100000
+   1250  f340		       a0		      .byte.b	%10100000
+   1251  f341		       a0		      .byte.b	%10100000
+   1252  f342		       a0		      .byte.b	%10100000
+   1253  f343		       e0		      .byte.b	%11100000
+   1254  f344
+   1255  f344				   .one_left
+   1256  f344		       40		      .byte.b	%01000000
+   1257  f345		       c0		      .byte.b	%11000000
+   1258  f346		       40		      .byte.b	%01000000
+   1259  f347		       40		      .byte.b	%01000000
+   1260  f348		       e0		      .byte.b	%11100000
+   1261  f349				   .two_left
+   1262  f349		       e0		      .byte.b	%11100000
+   1263  f34a		       20		      .byte.b	%00100000
+   1264  f34b		       e0		      .byte.b	%11100000
+   1265  f34c		       80		      .byte.b	%10000000
+   1266  f34d		       e0		      .byte.b	%11100000
+   1267  f34e				   .three_left
+   1268  f34e		       e0		      .byte.b	%11100000
+   1269  f34f		       20		      .byte.b	%00100000
+   1270  f350		       e0		      .byte.b	%11100000
+   1271  f351		       20		      .byte.b	%00100000
+   1272  f352		       e0		      .byte.b	%11100000
+   1273  f353				   .four_left
+   1274  f353		       a0		      .byte.b	%10100000
+   1275  f354		       a0		      .byte.b	%10100000
+   1276  f355		       e0		      .byte.b	%11100000
+   1277  f356		       20		      .byte.b	%00100000
+   1278  f357		       20		      .byte.b	%00100000
+   1279  f358				   .five_left
+   1280  f358		       e0		      .byte.b	%11100000
+   1281  f359		       80		      .byte.b	%10000000
+   1282  f35a		       e0		      .byte.b	%11100000
+   1283  f35b		       20		      .byte.b	%00100000
+   1284  f35c		       e0		      .byte.b	%11100000
+   1285  f35d				   .six_left
+   1286  f35d		       e0		      .byte.b	%11100000
+   1287  f35e		       80		      .byte.b	%10000000
+   1288  f35f		       e0		      .byte.b	%11100000
+   1289  f360		       a0		      .byte.b	%10100000
+   1290  f361		       e0		      .byte.b	%11100000
+   1291  f362				   .seven_left
+   1292  f362		       e0		      .byte.b	%11100000
+   1293  f363		       20		      .byte.b	%00100000
+   1294  f364		       20		      .byte.b	%00100000
+   1295  f365		       20		      .byte.b	%00100000
+   1296  f366		       20		      .byte.b	%00100000
+   1297  f367				   .eight_left
+   1298  f367		       e0		      .byte.b	%11100000
+   1299  f368		       a0		      .byte.b	%10100000
+   1300  f369		       e0		      .byte.b	%11100000
+   1301  f36a		       a0		      .byte.b	%10100000
+   1302  f36b		       e0		      .byte.b	%11100000
+   1303  f36c				   .nine_left
+   1304  f36c		       e0		      .byte.b	%11100000
+   1305  f36d		       a0		      .byte.b	%10100000
+   1306  f36e		       e0		      .byte.b	%11100000
+   1307  f36f		       20		      .byte.b	%00100000
+   1308  f370		       20		      .byte.b	%00100000
+   1309  f371				   .ten_left
+   1310  f371		       4e		      .byte.b	%01001110
+   1311  f372		       ca		      .byte.b	%11001010
+   1312  f373		       4a		      .byte.b	%01001010
+   1313  f374		       4a		      .byte.b	%01001010
+   1314  f375		       ee		      .byte.b	%11101110
+   1315  f376
+   1316  f376				   .zero_back
+   1317  f376		       07		      .byte.b	%00000111
+   1318  f377		       05		      .byte.b	%00000101
+   1319  f378		       05		      .byte.b	%00000101
+   1320  f379		       05		      .byte.b	%00000101
+   1321  f37a		       07		      .byte.b	%00000111
+   1322  f37b
+   1323  f37b				   .one_back
+   1324  f37b		       02		      .byte.b	%00000010
+   1325  f37c		       03		      .byte.b	%00000011
+   1326  f37d		       02		      .byte.b	%00000010
+   1327  f37e		       02		      .byte.b	%00000010
+   1328  f37f		       07		      .byte.b	%00000111
+   1329  f380
+   1330  f380				   .two_back
+   1331  f380		       07		      .byte.b	%00000111
+   1332  f381		       04		      .byte.b	%00000100
+   1333  f382		       07		      .byte.b	%00000111
+   1334  f383		       01		      .byte.b	%00000001
+   1335  f384		       07		      .byte.b	%00000111
+   1336  f385				   .three_back
+   1337  f385		       07		      .byte.b	%00000111
+   1338  f386		       04		      .byte.b	%00000100
+   1339  f387		       07		      .byte.b	%00000111
+   1340  f388		       04		      .byte.b	%00000100
+   1341  f389		       07		      .byte.b	%00000111
+   1342  f38a				   .four_back
+   1343  f38a		       05		      .byte.b	%00000101
+   1344  f38b		       05		      .byte.b	%00000101
+   1345  f38c		       07		      .byte.b	%00000111
+   1346  f38d		       04		      .byte.b	%00000100
+   1347  f38e		       04		      .byte.b	%00000100
+   1348  f38f				   .five_back
+   1349  f38f		       07		      .byte.b	%00000111
+   1350  f390		       01		      .byte.b	%00000001
+   1351  f391		       07		      .byte.b	%00000111
+   1352  f392		       04		      .byte.b	%00000100
+   1353  f393		       07		      .byte.b	%00000111
+   1354  f394				   .six_back
+   1355  f394		       07		      .byte.b	%00000111
+   1356  f395		       01		      .byte.b	%00000001
+   1357  f396		       07		      .byte.b	%00000111
+   1358  f397		       05		      .byte.b	%00000101
+   1359  f398		       07		      .byte.b	%00000111
+   1360  f399				   .seven_back
+   1361  f399		       07		      .byte.b	%00000111
+   1362  f39a		       04		      .byte.b	%00000100
+   1363  f39b		       04		      .byte.b	%00000100
+   1364  f39c		       04		      .byte.b	%00000100
+   1365  f39d		       04		      .byte.b	%00000100
+   1366  f39e				   .eight_back
+   1367  f39e		       07		      .byte.b	%00000111
+   1368  f39f		       05		      .byte.b	%00000101
+   1369  f3a0		       07		      .byte.b	%00000111
+   1370  f3a1		       05		      .byte.b	%00000101
+   1371  f3a2		       07		      .byte.b	%00000111
+   1372  f3a3				   .nine_back
+   1373  f3a3		       07		      .byte.b	%00000111
+   1374  f3a4		       05		      .byte.b	%00000101
+   1375  f3a5		       07		      .byte.b	%00000111
+   1376  f3a6		       04		      .byte.b	%00000100
+   1377  f3a7		       04		      .byte.b	%00000100
+   1378  f3a8				   .ten_back
+   1379  f3a8		       72		      .byte.b	%01110010
+   1380  f3a9		       53		      .byte.b	%01010011
+   1381  f3aa		       52		      .byte.b	%01010010
+   1382  f3ab		       52		      .byte.b	%01010010
+   1383  f3ac		       77		      .byte.b	%01110111
+   1384  f3ad
+   1385  f3ad
+   1386  f3ad							;------------------------------------------------
+   1387  f3ad							; Interrupt Vectors
+   1388  f3ad							;------------------------------------------------
+ 941  ROM bytes used
+   1389  f3ad					      echo	[*-$F000]d, " ROM bytes used"
+   1390  fffa					      ORG	$FFFA
+   1391  fffa		       00 f0		      .word.w	Start	; NMI
+   1392  fffc		       00 f0		      .word.w	Start	; RESET
+   1393  fffe		       00 f0		      .word.w	Start	; IRQ
+   1394  10000
+   1395  10000					       END

@@ -35,6 +35,8 @@ level1pos		.byte
 startingx   	.byte
 loopscore   	.byte
 
+player1vert		.byte
+
 sprite0vert		.byte
 sprite0horiz	.byte
 
@@ -50,6 +52,8 @@ frames			.byte
 
 direction		.byte
 
+gameState		.byte
+
 ;------------------------------------------------
 ; Start of ROM
 ;------------------------------------------------
@@ -60,10 +64,8 @@ Start
         CLEAN_START                        ; Clear RAM and Registers
 
         
-        lda                #PF_REFLECT; | PF_BALL_SIZE4
+        lda                #PF_REFLECT
         sta                CTRLPF
-        ;lda                #2
-        ;sta                ENABL
 		lda					#1
 		sta					level1pos
         
@@ -71,10 +73,12 @@ Start
         sta                horiz
 		sta				   counter
 		sta				   direction
+		sta				   gameState
         lda                #50
         sta                startingx
         lda                #160
         sta                vert
+		sta				   player1vert
         lda                #$AD
         sta                COLUP1
 		
@@ -115,6 +119,7 @@ MainLoop
 				bne			.finishLoop
 				inc			level1pos
 				nop
+				nop
 				sta			RESM1
 				nop
 				nop
@@ -125,7 +130,18 @@ MainLoop
 				nop
 				nop
 				sta			RESM0
-
+				nop
+				nop
+				nop
+				nop
+				nop
+				nop
+				nop
+				nop
+				nop
+				nop
+				nop
+				sta			RESP1			
 .finishLoop
     lda     #43
     sta     TIM64T
@@ -146,6 +162,20 @@ MainLoop
 ;------------------------------------------------        
 DrawScreen
 
+			   lda		gameState
+			   cmp		#2
+			   beq		.win
+			   lda		gameState
+			   cmp		#1
+			   bne		.level1
+			   jmp		.endGame
+.win
+	lda			#%00000000
+	sta			PF0
+	sta			PF1
+	sta			PF2
+	jmp			.winGame
+.level1
 		       lda                 #$04
 		       sta                 COLUBK
 
@@ -290,10 +320,21 @@ DrawScreen
         bcs                .missileEnable1
         lda                #0
         sta                ENAM1
-        jmp                .playfieldLoopTopMazeEnd
+        jmp                .goal
 .missileEnable1
         lda                #2
         sta                ENAM1
+.goal
+		tya
+        sbc                player1vert
+        adc                #11
+        bcs                .goalEnable
+        lda                #0
+        sta                GRP1
+        jmp                .playfieldLoopTopMazeEnd
+.goalEnable
+		lda					#%11110000
+		sta					GRP1
 		;do this stuff last in each loop
 .playfieldLoopTopMazeEnd
 		sta				   WSYNC		
@@ -462,32 +503,14 @@ DrawScreen
 		sta				   WSYNC
 		sta				   WSYNC
 		sta				   WSYNC
-
-		;inx
-		;lda                .playfield1,x
-		;sta                PF1
-		;lda                .playfield2,x
-		;sta                PF2
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;.missileDisable
-;		lda		counter
-;		sbc		#50
-;		bne		.row1check
-;		sbc		#50
-;		bmi		.row2check
-;		jmp		.row3check
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;		
-;vert ~101-150
-.row1check
-		;inc			counter		
-		
-;vert ~51-100
-.row2check
-;		inc			counter
-
-;vert ~1-50
-.row3check
-;		inc			counter
+		jmp				   .ballLoop
+.winGame
+		lda		#$DE
+		sta		COLUBK
+		jmp		.waitForOverscan
+.endGame
+		lda		#0
+		sta		COLUBK
 
 ;ball
 .ballLoop
@@ -504,11 +527,7 @@ DrawScreen
         ;lda                                   #2
         ;sta                                   ENABL
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-.endPlayfieldLoop
-        ;dey
-        ;sta                WSYNC
-        ;bne                .jmpplayfieldLoop
-		;bne					.playfieldLoop
+
 ;------------------------------------------------
 ; Overscan
 ;------------------------------------------------
@@ -593,14 +612,14 @@ DrawScreen
 		dec		lives
 		dec		lives
 		dec		lives
+		lda		lives
 		cmp		#0
 		beq		.gameOver
-		
+		jmp		.playerMovement
 .endLevel
-		
-.gameOver
-		
-		
+		lda		#2
+		sta		gameState
+		jmp		.waitForOverscan	
 .playerMovement
         lda     		#%00000000
         sta     		HMM1
@@ -651,7 +670,13 @@ DrawScreen
 				dec		startingx
 				lda		#200
 				sta		frames
-
+				lda		startingx
+				cmp		#0
+				beq		.gameOver
+				jmp		.waitForOverscan
+.gameOver
+		lda		#1
+		sta		gameState
                 
 .waitForOverscan
         lda     INTIM
