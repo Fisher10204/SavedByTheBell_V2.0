@@ -56,6 +56,7 @@ bdirection		.byte
 gameState		.byte
 
 notecounter		.byte
+notecounter2		.byte
 
 ob1vert			.byte
 ob2vert			.byte
@@ -89,6 +90,8 @@ Start
 		sta				   counter
 		sta				   direction
 		sta				   bdirection
+		sta				   notecounter
+		sta				   notecounter2
         lda                #50
         sta                startingx
         lda                #160
@@ -171,6 +174,35 @@ MainLoop
 
         ;***** Vertical Blank code goes here
 		;sta		WSYNC
+		lda		gameState
+		cmp		#1
+		beq		.level1Sound
+.level2Sound
+		lda		#12
+		sta		AUDC0
+		lda		notecounter2
+		cmp		#131
+		beq		.justbeforeVB
+		inc		notecounter2
+		lda		notecounter2
+		cmp		#20
+		bmi		.turnOn
+		lda		notecounter2
+		cmp		#40
+		bmi		.turnOff
+		lda		notecounter2
+		cmp		#60
+		bmi		.turnOn
+		lda		notecounter2
+		cmp		#80
+		bmi		.turnOff
+		lda		notecounter2
+		cmp		#100
+		bmi		.turnOn
+		lda		notecounter2
+		cmp		#130
+		bmi		.turnOff
+.level1Sound
 		lda		notecounter
 		cmp		#131
 		beq		.justbeforeVB
@@ -229,10 +261,10 @@ DrawScreen
 			   beq		.toWin
 			   jmp		.endGame
 .level2
-		       lda                 #$40
+		       lda                 #$28
 		       sta                 COLUBK
 
-		       lda                 #$C3
+		       lda                 #$10
 		       sta                 COLUPF
 
 			   ldx					lives
@@ -911,6 +943,8 @@ DrawScreen
 		
 		lda		#$C4
 		sta		COLUPF
+		
+		sta		WSYNC
 		
 		ldx	#0
 		lda	.wi,x
@@ -1612,6 +1646,7 @@ DrawScreen
 		sta		HMM0
 		lda		#1
 		sta		direction
+		jmp		.ballLeft
 		
 .changeBallDirection
 		lda		bdirection
